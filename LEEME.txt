@@ -1,0 +1,50 @@
+SITIO CANAAN - CONECTADO A SUPABASE (EN LINEA)
+
+ARCHIVOS
+  index.html       Web publica. Lee lo publicado desde Supabase (si falla, usa datos.js y pagina.js).
+  admin.html       EDITOR VISUAL. Entra con el correo y contrasena del usuario creado en Supabase.
+  productos.html   Productos, precios, fotos, WhatsApp, redes. Mismo usuario. "Guardar y publicar".
+  nube.js          Conexion con Supabase (URL y llave publica).
+  datos.js, pagina.js, borrador.js   Respaldo y contenido inicial. Ya NO se editan.
+  render.js, site.css, ed-*.js, editor.css   Motor del sitio y del editor.
+  images/          Fotos originales. Las fotos nuevas se suben a Supabase (bucket "imagenes").
+
+DONDE SE GUARDA TODO (Supabase > tabla "contenido")
+  datos            productos, precios, textos, redes (lo escribe productos.html)
+  borrador         diseno guardado sin publicar (boton Guardar del editor)
+  pagina           diseno publicado (boton Publicar del editor)
+  pagina_anterior  copia del publicado anterior
+
+FLUJO DEL EDITOR: GUARDAR -> VISTA PREVIA -> PUBLICAR
+  Se puede usar desde cualquier computadora o celular. Ya no hace falta elegir carpeta.
+  Solo vuelves a subir la carpeta a Netlify si cambias el CODIGO (no para cambiar contenido).
+
+PEDIDOS POR WHATSAPP CON VISTA PREVIA
+  netlify/functions/p.mjs arma la tarjeta (foto, nombre, precio, talla) que WhatsApp muestra.
+  Solo funciona si la web se publica desde GitHub (Netlify no la activa al arrastrar la carpeta).
+  images/mini/ = fotos livianas para esa tarjeta. productos.html las crea solo para fotos nuevas.
+
+TALLAS
+  En productos.html marca las tallas disponibles de cada prenda (o escribe otras).
+  La clienta elige su talla en la web y va dentro del mensaje de WhatsApp.
+
+CAMBIAR CONTRASENA O AGREGAR OTRO ADMIN: Supabase > Authentication > Users.
+
+ATAJOS
+  Clic seleccionar | Shift+clic varios | arrastrar fondo = marco de seleccion | doble clic texto = escribir
+  Espacio+arrastrar o rueda = mover lienzo | Ctrl+rueda = zoom | Ctrl+0 ajustar
+  Ctrl+Z / Ctrl+Y deshacer-rehacer | Ctrl+C/X/V | Ctrl+D duplicar | Supr borrar | flechas (Shift = 10px)
+  Ctrl+G agrupar / Ctrl+Shift+G desagrupar | Ctrl+] / Ctrl+[ ordenar capas | Alt+arrastrar duplica
+  Arrastra imagenes o fuentes desde tu PC al lienzo para agregarlas.
+
+
+=== NOVEDADES: TODO ES EDITABLE ===
+- Logo, menú, "Compra por categoría", títulos, líneas, botones, fotos de galería, íconos, opinión y pie:
+  haz clic directamente en ellos en el lienzo. Arrastra para moverlos, esquina para escalar, doble clic para escribir.
+  En el panel derecho cambias fuente, tamaño, color, fondo, bordes, sombra, rotación, opacidad y ocultar.
+  Si hay varias piezas iguales (p. ej. los 4 botones de categoría) el cambio se aplica a todas.
+- Capas: abre la flecha ▸ de un bloque para ver y ocultar sus piezas.
+- Animaciones (piezas, elementos libres y secciones completas): 13 presets en un clic y 18 tipos
+  (deslizar, rebote, pop, zoom, desenfoque, revelar, giro 3D, flotar, latido...). Disparador: al aparecer,
+  al cargar o al pasar el mouse. Escalonado entre piezas iguales, duración, retraso, velocidad, repeticiones y curva.
+- Productos, precios, fotos de prendas, redes y WhatsApp siguen en productos.html.

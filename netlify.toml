@@ -1,0 +1,7 @@
+# Configuración de Netlify (no hace falta tocarla)
+[build]
+  publish = "."
+  command = ""
+
+[functions]
+  directory = "netlify/functions"

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor visual — Canaàn</title>
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+<div id="login"><div class="lbox">
+  <h2>Editor Canaàn</h2>
+  <label>Correo<input type="email" id="correo" autocomplete="username"></label>
+  <label>Contraseña<input type="password" id="clave" autocomplete="current-password"></label>
+  <p id="err"></p>
+  <button id="entrar" class="b pri wide">Entrar</button>
+</div></div>
+
+<header id="top">
+  <div class="brand">Canaàn</div>
+  <div class="tg2" role="group" aria-label="Dispositivo">
+    <button id="dev-d" title="Escritorio (1280)">🖥 PC</button><button id="dev-t" title="Tablet (820)">▭ Tablet</button><button id="dev-m" title="Móvil (390)">▯ Móvil</button>
+  </div>
+  <div class="tg2"><button id="b-undo" title="Deshacer (Ctrl+Z)">↶</button><button id="b-redo" title="Rehacer (Ctrl+Y)">↷</button></div>
+  <div class="tg2"><button id="z-out" title="Alejar">−</button><span id="zoomv">60%</span><button id="z-in" title="Acercar">+</button><button id="z-fit" title="Ajustar al ancho (Ctrl+0)">⤢</button><button id="z-100" title="Zoom 100%">1:1</button></div>
+  <div class="tg2"><button id="b-hand" title="Mano: mover el lienzo (o mantén Espacio)">✋</button><button id="b-grid" title="Mostrar cuadrícula (los elementos se imantan a ella)">▦</button><button id="b-snap" title="Imán y guías">🧲</button><button id="b-3d" title="Vista 3D: capas en profundidad (arrastra para orbitar)">⬡ 3D</button></div>
+  <span class="sp"></span>
+  <span id="status" class="status">—</span>
+  <button id="b-salir" class="b" title="Cerrar sesión">⎋ Salir</button>
+  <button id="b-prev" class="b">▶ Vista previa</button>
+  <button id="b-save" class="b">💾 Guardar</button>
+  <button id="b-pub" class="b pri">🚀 Publicar</button>
+  <a class="b" href="productos.html" target="_blank" title="Productos, precios, WhatsApp, redes">🛍 Productos</a>
+</header>
+
+<div id="main">
+  <aside id="left">
+    <div id="ltabs"><button data-tab="add">Añadir</button><button data-tab="layers">Capas</button><button data-tab="design">Diseño</button></div>
+    <div id="pane-add" class="pane"></div><div id="pane-layers" class="pane" style="display:none"></div><div id="pane-design" class="pane" style="display:none"></div>
+  </aside>
+
+  <div id="vp">
+    <div id="world"><div id="frame"><div id="pagina"></div><div id="ovl"></div></div></div>
+    <div id="pvbar"><b>Vista previa</b> · así se ve el sitio (animaciones activas). Usa los botones de dispositivo de arriba.
+      <button id="b-replay" class="b sm">↻ Reproducir animaciones</button><button id="b-open" class="b sm" title="Abre index.html?preview=1 en otra pestaña (guarda primero)">↗ Abrir en pestaña</button><button id="b-exit" class="b sm pri">Salir</button></div>
+  </div>
+
+  <aside id="right"><div id="props"></div></aside>
+</div>
+<div id="toast"></div>
+
+<script src="datos.js"></script>
+<script src="pagina.js"></script>
+<script src="borrador.js"></script>
+<script src="render.js"></script>
+<script src="nube.js"></script>
+<script src="ed-core.js"></script>
+<script src="ed-canvas.js"></script>
+<script src="ed-convert.js"></script>
+<script src="ed-panels.js"></script>
+<script src="ed-io.js"></script>
+<script src="ed-enlace.js"></script>
+</body>
+</html>

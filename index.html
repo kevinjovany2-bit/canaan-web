@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canaàn Boutique</title>
+<link rel="stylesheet" href="site.css">
+<style>html{scroll-behavior:smooth}body{margin:0}#pagina{min-height:100vh}
+#vp-aviso{position:fixed;left:0;right:0;bottom:0;z-index:99;background:#7c3aed;color:#fff;font:600 13px system-ui;text-align:center;padding:8px}</style>
+</head>
+<body>
+<div id="pagina"></div>
+
+<!-- datos de productos/textos (productos.html) y página publicada (admin.html) -->
+<script src="datos.js"></script>
+<script src="pagina.js"></script>
+<script src="render.js"></script>
+<script src="nube.js"></script>
+<script>
+(function () {
+  var el = document.getElementById('pagina');
+  function go(doc) {
+    try { document.title = (SITIO.nombre || 'Tienda') + ' ' + (SITIO.heroSup || ''); } catch (e) {}
+    PG.mount(el, doc || PG.defaultDoc());
+    setTimeout(irAPrenda, 300);
+  }
+  /* viene de un enlace de WhatsApp (/p/prenda): muestra esa prenda y su talla */
+  function irAPrenda() {
+    var q = new URLSearchParams(location.search), id = q.get('p'), t = q.get('t'); if (!id) return;
+    var a = Array.prototype.filter.call(el.querySelectorAll('.prod'), function (x) { return x.dataset.pid === id; })[0]; if (!a) return;
+    a.style.display = ''; if (t) PG.elegirTalla(a, t);
+    a.scrollIntoView({ block: 'center' }); a.classList.add('hl'); setTimeout(function () { a.classList.remove('hl'); }, 2500);
+  }
+  var preview = /[?&]preview/.test(location.search);
+  if (preview) { var b = document.createElement('div'); b.id = 'vp-aviso'; b.textContent = 'VISTA PREVIA · borrador sin publicar'; document.body.appendChild(b); }
+  /* Lee lo publicado desde Supabase; si falla, usa datos.js / pagina.js de la carpeta */
+  NUBE.leer(preview ? ['datos', 'borrador', 'pagina'] : ['datos', 'pagina']).then(function (d) {
+    if (d.datos) window.SITIO = d.datos;
+    if (d.pagina) window.PAGINA = d.pagina;
+    if (d.borrador) window.PAGINA_BORRADOR = d.borrador;
+  }).catch(function (e) { console.warn('Supabase no respondió, uso los archivos locales:', e); }).then(function () {
+    if (!preview) return go(window.PAGINA);
+    var ls = null; try { ls = JSON.parse(localStorage.getItem('canaan_borrador')); } catch (e) {}
+    var nb = window.PAGINA_BORRADOR;
+    go(ls && (!nb || (ls.t || 0) > (nb.t || 0)) ? ls : (nb || window.PAGINA));
+  });
+})();
+</script>
+</body>
+</html>

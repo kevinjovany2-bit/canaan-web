@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Canaàn Boutique</title></head>
+<body style="font:16px system-ui;text-align:center;padding:40px">
+<p>Cargando…</p><p><a href="/">Ir a la tienda</a></p>
+<script>
+/* respaldo: si un enlace /p/prenda llega aquí, lleva a la prenda dentro de la web */
+var m = location.pathname.match(/^\/p\/([^\/]+)/);
+location.replace(m ? '/?p=' + m[1] + (new URLSearchParams(location.search).get('t') ? '&t=' + encodeURIComponent(new URLSearchParams(location.search).get('t')) : '') + '#novedades' : '/');
+</script></body></html>

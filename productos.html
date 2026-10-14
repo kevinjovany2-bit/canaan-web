@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Productos y datos — Canaàn</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f5f6;color:#111;font:15px/1.5 system-ui,Segoe UI,sans-serif}
+.bar{position:sticky;top:0;z-index:5;background:#111;color:#fff;padding:12px 4vw;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar b{margin-right:auto;font-size:18px}
+button,.up{font:600 14px system-ui;padding:9px 16px;border:0;border-radius:6px;cursor:pointer;background:#fff;color:#111}
+.bar .main{background:#9aa0a8}
+.bar a{color:#fff}
+#estado{width:100%;font-size:13px;opacity:.85}
+main{max-width:980px;margin:0 auto;padding:20px 4vw 80px}
+.ayuda{background:#fff;border-left:4px solid #9aa0a8;padding:12px 16px;margin-bottom:18px;font-size:14px}
+fieldset{background:#fff;border:1px solid #e3e3e6;border-radius:10px;margin:0 0 18px;padding:14px 18px 18px}
+legend{font-weight:700;font-size:17px;padding:0 8px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 0}
+input:not([type=file]):not([type=range]),textarea,select{width:100%;padding:9px;border:1px solid #cfcfd4;border-radius:6px;font:inherit;margin-top:4px}
+textarea{min-height:70px}
+.fila{display:grid;gap:10px;grid-template-columns:90px 1.4fr 1fr 100px 1fr auto;align-items:end;border-top:1px solid #e3e3e6;padding:12px 0}
+.fila2{grid-template-columns:140px 1fr 2fr auto}
+.fila3{grid-template-columns:1fr 2fr auto}
+.mini{width:90px;height:90px;border-radius:6px;background:#eee;object-fit:cover;display:block}
+.imgs{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.imgs div{position:relative}
+.x{background:#c0392b;color:#fff;padding:7px 11px}
+.up{background:#111;color:#fff;display:inline-block;margin-top:6px}
+.add{background:#e4e6ea;margin-top:10px}
+#login{position:fixed;inset:0;background:#111;display:grid;place-items:center;z-index:9}
+#login div{background:#fff;padding:28px;border-radius:12px;width:min(340px,90%)}
+@media(max-width:760px){.fila,.fila2,.fila3{grid-template-columns:1fr 1fr}}
+.fila:not(.fila2):not(.fila3){grid-template-columns:90px 1.6fr 1fr 110px auto}
+@media(max-width:760px){.fila:not(.fila2):not(.fila3){grid-template-columns:1fr 1fr}}
+.tz{grid-column:1/-1;background:#f7f7f8;border-radius:8px;padding:8px 10px}
+.tz b{font-size:12px;margin-right:6px}
+.tz .g{display:inline-flex;flex-wrap:wrap;gap:4px;margin:4px 10px 4px 0;vertical-align:middle}
+.tz label.ch{display:inline-flex;align-items:center;margin:0;font-weight:600;font-size:13px;border:1px solid #cfcfd4;border-radius:6px;padding:4px 8px;background:#fff;cursor:pointer;user-select:none}
+.tz label.ch input{display:none}
+.tz label.ch.on{background:#111;color:#fff;border-color:#111}
+.tz .otras{display:inline-block;width:220px;margin:4px 0;padding:6px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div id="login"><div>
+  <h2 style="margin:0 0 10px">Administrador Canaàn</h2>
+  <label>Correo<input type="email" id="correo" autocomplete="username"></label>
+  <label>Contraseña<input type="password" id="clave" autocomplete="current-password"></label>
+  <p id="err" style="color:#c0392b;margin:8px 0 0"></p>
+  <button id="entrar" style="background:#111;color:#fff;margin-top:12px;width:100%">Entrar</button>
+</div></div>
+
+<div class="bar">
+  <b>Productos y datos · Canaàn</b>
+  <button id="guardar" class="main">Guardar y publicar</button>
+  <button id="salir">Salir</button>
+  <a href="admin.html" target="_blank">Editor visual ↗</a> <a href="index.html" target="_blank">Ver sitio ↗</a>
+  <div id="estado">Los cambios se guardan en la nube y se ven al instante en la web.</div>
+</div>
+
+<main>
+  <div class="ayuda"><b>Cómo se usa:</b> haz tus cambios (precios, prendas, fotos, WhatsApp…) y presiona <b>Guardar y publicar</b>. Las fotos se suben a la nube y la web se actualiza para todo el mundo. Funciona desde la computadora o el celular.</div>
+  <div id="app"></div>
+</main>
+
+<script src="datos.js"></script>
+<script src="nube.js"></script>
+<script>
+var S = null, files = {}, urls = {};
+var $ = function(i){ return document.getElementById(i); };
+var esc = function(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); };
+
+/* ---- acceso con el usuario de Supabase ---- */
+async function abrir(){
+  $("err").textContent = "Cargando desde la nube…";
+  try { await NUBE.cargarAdmin(); } catch (x) { $("err").textContent = "No se pudo cargar: " + x.message; $("login").style.display = ""; return; }
+  S = JSON.parse(JSON.stringify(SITIO)); var vistos = {}; (S.productos || []).forEach(function(p){ if (!p.id) { var sl = slug(p.nombre) || "prenda"; vistos[sl] = (vistos[sl] || 0) + 1; p.id = sl + (vistos[sl] > 1 ? "-" + vistos[sl] : ""); } if (!Array.isArray(p.tallasDisp)) setTallas(p, tallasDe(p)); }); $("err").textContent = ""; $("login").style.display = "none"; render();
+}
+async function entrar(){
+  $("entrar").disabled = true; $("err").textContent = "Entrando…";
+  try { await NUBE.entrar($("correo").value.trim(), $("clave").value); await abrir(); } catch (x) { $("err").textContent = x.message; }
+  $("entrar").disabled = false;
+}
+$("entrar").onclick = entrar;
+$("clave").onkeydown = function(e){ if (e.key === "Enter") entrar(); };
+$("salir").onclick = function(){ NUBE.salir(); location.reload(); };
+NUBE.token().then(function(t){ if (t) abrir(); else { var s = NUBE.sesion(); if (s && s.email) $("correo").value = s.email; $(s && s.email ? "clave" : "correo").focus(); } });
+
+/* ---- acceso a datos por ruta ("productos.2.nombre") ---- */
+function getP(p){ return p.split(".").reduce(function(o,k){ return o[k]; }, S); }
+function setP(p, v){ var a = p.split("."), l = a.pop(); a.reduce(function(o,k){ return o[k]; }, S)[l] = v; }
+function delP(p){ var a = p.split("."), i = a.pop(); a.reduce(function(o,k){ return o[k]; }, S).splice(+i, 1); }
+
+/* ---- piezas de formulario ---- */
+function T(l, p){ return '<label>' + l + '<input data-p="' + p + '" value="' + esc(getP(p)) + '"></label>'; }
+function A(l, p){ return '<label>' + l + '<textarea data-p="' + p + '">' + esc(getP(p)) + '</textarea></label>'; }
+function L(l, p){ return '<label>' + l + ' <small>(uno por línea)</small><textarea data-lines="' + p + '">' + esc(getP(p).join("\n")) + '</textarea></label>'; }
+function src(n){ if (files[n]) { urls[n] = urls[n] || URL.createObjectURL(files[n]); return urls[n]; } return NUBE.ruta("images/" + n); }
+function thumb(n){ return n ? '<img class="mini" src="' + esc(src(n)) + '" alt="" onerror="this.style.opacity=.25">' : '<div class="mini"></div>'; }
+function foto1(l, p){ var v = getP(p); return '<label>' + l + '</label><div class="imgs"><div>' + thumb(v) + '</div></div><label class="up">Subir imagen<input type="file" accept="image/*" data-img="' + p + '" hidden></label> ' + (v ? '<button class="x" data-clear="' + p + '">Quitar</button>' : ''); }
+function fotos(l, p){
+  return '<label>' + l + '</label><div class="imgs">' + getP(p).map(function(n, i){ return '<div>' + thumb(n) + '<button class="x" data-del="' + p + '.' + i + '" style="position:absolute;top:2px;right:2px;padding:2px 8px">✕</button></div>'; }).join("") + '</div><label class="up">Agregar fotos<input type="file" accept="image/*" multiple data-addimg="' + p + '" hidden></label>';
+}
+
+function render(){
+  var cats = S.categorias;
+  $("app").innerHTML =
+  '<fieldset><legend>General</legend>' + T("Nombre de la tienda","nombre") + T("WhatsApp (504 + número, sin espacios)","whatsapp") + foto1("Logo (opcional; si no hay, se muestra el nombre)","logo") + '<p class="hint"><a href="admin.html#logo" target="_blank" style="font-weight:700">🎨 Editar tamaño, posición y rotación del logo (libre) ↗</a></p>' + L("Avisos de la barra negra","avisos") + '</fieldset>' +
+  '<fieldset><legend>Portada y diseño</legend><p>La portada (textos, fotos de fondo, botón) y todo el diseño ahora se editan en el <a href="admin.html" target="_blank">Editor visual ↗</a>.</p></fieldset>' +
+  '<fieldset><legend>Categorías</legend>' + L("Categorías","categorias") + '</fieldset>' +
+  '<fieldset><legend>Prendas</legend>' + T("Título de la sección","tituloProductos") +
+  S.productos.map(function(p, i){
+    var k = "productos." + i + ".";
+    return '<div class="fila"><div>' + thumb(p.foto) + '<label class="up" style="padding:5px 8px;font-size:12px">Foto<input type="file" accept="image/*" data-img="' + k + 'foto" hidden></label></div>' +
+    T("Nombre", k + "nombre") +
+    '<label>Categoría<select data-p="' + k + 'cat">' + cats.map(function(c){ return '<option' + (c === p.cat ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join("") + '</select></label>' +
+    '<label>Precio L<input type="number" data-p="' + k + 'precio" value="' + p.precio + '"></label>' +
+    '<button class="x" data-delrow="productos.' + i + '">Borrar</button>' + tallasUI(p, i) + '</div>';
+  }).join("") + '<button class="add" data-addrow="producto">+ Agregar prenda</button></fieldset>' +
+  '<fieldset><legend>Opinión de clienta</legend>' + A("Opinión","opinion") + T("Autora","opinionAutor") + '</fieldset>' +
+  '<fieldset><legend>Galería de Instagram</legend>' + fotos("Fotos","galeria") + '</fieldset>' +
+  '<fieldset><legend>Ventajas</legend>' + S.ventajas.map(function(v, i){
+    var k = "ventajas." + i + ".";
+    return '<div class="fila fila2"><label>Ícono<select data-p="' + k + 'icono">' + ["envio","cambio","chat","candado"].map(function(o){ return '<option' + (o === v.icono ? ' selected' : '') + '>' + o + '</option>'; }).join("") + '</select></label>' + T("Título", k + "titulo") + T("Texto", k + "texto") + '<button class="x" data-delrow="ventajas.' + i + '">Borrar</button></div>';
+  }).join("") + '<button class="add" data-addrow="ventaja">+ Agregar ventaja</button></fieldset>' +
+  '<fieldset><legend>Contacto y redes</legend>' + T("Dirección","direccion") + T("Horario","horario") + T("Teléfono (texto visible)","telefono") +
+  S.redes.map(function(r, i){ var k = "redes." + i + "."; return '<div class="fila fila3">' + T("Red", k + "nombre") + T("Enlace", k + "url") + '<button class="x" data-delrow="redes.' + i + '">Borrar</button></div>'; }).join("") +
+  '<button class="add" data-addrow="red">+ Agregar red</button>' + T("Texto del pie de página","pie") + '</fieldset>';
+}
+
+/* ---- tallas: la tienda marca las disponibles; la clienta elige en la web ---- */
+var TALLAS = [["Ropa", ["XS","S","M","L","XL","XXL"]], ["Números", ["0","1","3","5","7","9","11","13","15"]], ["Otros", ["Única"]]];
+var GEN = TALLAS.reduce(function(a, g){ return a.concat(g[1]); }, []);
+function tallasDe(p){
+  if (Array.isArray(p.tallasDisp)) return p.tallasDisp.slice();
+  return String(p.tallas || "").replace(/[–—-]/g, " ").split(/[\s,\/]+/).map(function(x){ return x.trim(); }).filter(function(x){ return x && !/^tallas?:?$/i.test(x); }).map(function(x){ return /^[uú]nica$/i.test(x) ? "Única" : x; });
+}
+function setTallas(p, arr){ var gen = GEN.filter(function(t){ return arr.indexOf(t) >= 0; }), ext = arr.filter(function(t){ return GEN.indexOf(t) < 0; }); p.tallasDisp = gen.concat(ext); p.tallas = p.tallasDisp.join(" "); }
+function tallasUI(p, i){
+  var ts = tallasDe(p), ext = ts.filter(function(t){ return GEN.indexOf(t) < 0; });
+  return '<div class="tz"><b>Tallas disponibles:</b>' + TALLAS.map(function(g){ return '<span class="g">' + g[1].map(function(t){ var on = ts.indexOf(t) >= 0; return '<label class="ch' + (on ? ' on' : '') + '"><input type="checkbox" data-talla="' + i + '" value="' + esc(t) + '"' + (on ? ' checked' : '') + '>' + esc(t) + '</label>'; }).join("") + '</span>'; }).join("") +
+    '<input class="otras" data-otras="' + i + '" placeholder="Otras tallas (ej. 26 28 30)" value="' + esc(ext.join(" ")) + '"></div>';
+}
+function slug(t){ return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+function nuevoId(){ return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+
+/* ---- eventos ---- */
+function nombreLibre(f){
+  var b = f.name.replace(/[^a-z0-9._-]/gi, "_"), d = b.lastIndexOf("."), n;
+  do { n = (d > 0 ? b.slice(0, d) : b) + "_" + Math.random().toString(36).slice(2, 7) + (d > 0 ? b.slice(d) : ""); } while (files[n] || NUBE.locales["images/" + n]);
+  files[n] = f; return n;
+}
+document.addEventListener("input", function(e){
+  var el = e.target;
+  if (el.dataset.otras != null) { var pr = S.productos[+el.dataset.otras], gen = tallasDe(pr).filter(function(t){ return GEN.indexOf(t) >= 0; }); setTallas(pr, gen.concat(el.value.split(/[\s,\/]+/).map(function(x){ return x.trim(); }).filter(Boolean))); return; }
+  var p = el.dataset.p; if (!p) return;
+  setP(p, (el.type === "number" || el.type === "range") ? Number(el.value) : el.value);
+});
+document.addEventListener("change", function(e){
+  var el = e.target, d = el.dataset;
+  if (d.talla != null) { var pr = S.productos[+d.talla], ts = tallasDe(pr).filter(function(t){ return t !== el.value; }); if (el.checked) ts.push(el.value); setTallas(pr, ts); el.parentNode.classList.toggle("on", el.checked); return; }
+  if (d.lines) { setP(d.lines, el.value.split("\n").map(function(x){ return x.trim(); }).filter(Boolean)); render(); }
+  else if (d.img && el.files[0]) { setP(d.img, nombreLibre(el.files[0])); render(); }
+  else if (d.addimg) { Array.prototype.forEach.call(el.files, function(f){ getP(d.addimg).push(nombreLibre(f)); }); render(); }
+});
+document.addEventListener("click", function(e){
+  var d = e.target.dataset;
+  if (d.clear) { setP(d.clear, ""); render(); }
+  else if (d.del) { delP(d.del); render(); }
+  else if (d.delrow) { if (confirm("¿Borrar?")) { delP(d.delrow); render(); } }
+  else if (d.addrow === "producto") { S.productos.unshift({ id: nuevoId(), nombre: "Nueva prenda", cat: S.categorias[0] || "", precio: 0, tallas: "S M L", tallasDisp: ["S","M","L"], foto: "" }); render(); }
+  else if (d.addrow === "ventaja") { S.ventajas.push({ icono: "chat", titulo: "Título", texto: "Texto" }); render(); }
+  else if (d.addrow === "red") { S.redes.push({ nombre: "Red", url: "https://" }); render(); }
+});
+
+/* ---- miniaturas (fotos livianas para la vista previa de WhatsApp) ---- */
+function miniDe(n){ return "mini/" + n.replace(/\.[^.]+$/, "") + ".jpg"; }
+async function achicar(blob){
+  var u = URL.createObjectURL(blob), im = new Image(); im.src = u; await im.decode(); URL.revokeObjectURL(u);
+  var k = Math.min(1, 600 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
+  c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+  return await new Promise(function(ok){ c.toBlob(ok, "image/jpeg", 0.78); });
+}
+async function miniaturas(){
+  var ps = (S.productos || []).filter(function(p){ return p.foto && (!p.mini || files[p.foto]); });
+  for (var i = 0; i < ps.length; i++) {
+    var p = ps[i], m = miniDe(p.foto);
+    if (NUBE.locales["images/" + m]) { p.mini = m; continue; }
+    try {
+      estado("Preparando vista previa de WhatsApp " + (i + 1) + " de " + ps.length + "…");
+      var src = files[p.foto] || await (await fetch(NUBE.ruta("images/" + p.foto))).blob();
+      await NUBE.subir("images/" + m, await achicar(src)); p.mini = m;
+    } catch (x) { console.warn("Sin miniatura para", p.foto, x); }
+  }
+}
+
+/* ---- guardar (fotos nuevas a Storage + datos a la tabla "contenido") ---- */
+function estado(t){ $("estado").textContent = t; }
+$("guardar").onclick = async function(){
+  var b = $("guardar"); b.disabled = true;
+  try {
+    var txt = JSON.stringify(S), nombres = Object.keys(files).filter(function(n){ return txt.indexOf(n) >= 0; });
+    for (var i = 0; i < nombres.length; i++) { estado("Subiendo foto " + (i + 1) + " de " + nombres.length + "…"); await NUBE.subir("images/" + nombres[i], files[nombres[i]]); }
+    await miniaturas();
+    estado("Guardando…");
+    await NUBE.guardar({ datos: S });
+    files = {}; urls = {}; render();
+    estado("✔ Publicado. La web ya muestra los cambios (" + new Date().toLocaleTimeString() + ").");
+  } catch (x) { estado("Error al guardar: " + x.message); }
+  b.disabled = false;
+};
+</script>
+</body>
+</html>
