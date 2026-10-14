@@ -274,6 +274,12 @@
       num(kind === 'btn' ? 'Alto px (vacío = automático)' : 'Alto px (vacío = según forma)', T, 'hp', { min: 20, max: 1200 }),
       seg('Alinear', T, 'wa', [['l', '⟸', 'Izquierda'], ['c', '≡', 'Centro'], ['r', '⟹', 'Derecha']], { def: 'c' }),
       btn('Tamaño automático', function () { T.set({ wp: undefined, hp: undefined, wa: undefined }, 'wp'); setTimeout(build, 0); }, 'sm')]));
+    if (nd.classList.contains('prod')) root.appendChild(group('Lados del cuadro (' + DEVN[ED.dev] + ')', [
+      h('div', { class: 'note', text: 'Mueve cada borde por separado (px). Ej.: baja "Abajo" para subir el borde de abajo. Arrastra el nombre del campo para ajustar con el mouse.' }),
+      rowOf([num('Arriba', T, 'pt', { min: 0, max: 200 }), num('Abajo', T, 'pb', { min: 0, max: 200 })]),
+      rowOf([num('Izquierda', T, 'pl', { min: 0, max: 200 }), num('Derecha', T, 'pr', { min: 0, max: 200 })]),
+      btn('Lados automáticos', function () { T.set({ pt: undefined, pb: undefined, pl: undefined, pr: undefined }, 'pt'); setTimeout(build, 0); }, 'sm'),
+      h('div', { class: 'note', text: 'Si sobra espacio abajo en algunos cuadros: toca la sección → "Cuadros de las prendas" → Altura: Según contenido.' })]));
     if (kind === 'btn' || kind === 'card' || kind === 'text') root.appendChild(group('Fondo y bordes', [fill('Fondo', T, 'bg', kind === 'btn' ? '@c1' : kind === 'text' ? 'none' : '@c3'), num('Espacio interior px', T, 'pd', { min: 0, max: 80 })].concat(borderG(T, 100))));
     if (nd.classList.contains('tb') && kind === 'text') root.appendChild(group('Fondo detrás del texto', [
       seg('Fondo', T, 'tbg', [['1', 'Con fondo'], ['0', 'Sin fondo']], { def: '1' }),
@@ -321,12 +327,16 @@
     root.appendChild(group('Cuadrícula de prendas', rows.concat([h('div', { class: 'note', text: 'Ej.: 4 columnas × 2 filas = muestra 8 prendas. Filas en 0 muestra todas. Cambia a Tablet o Móvil arriba para ver cómo queda.' })])));
     root.appendChild(group('Cuadros de las prendas (todos juntos)', [
       seg('Cuadro', G, 'card', [['1', 'Con marco'], ['0', 'Sin marco']], { def: '1' }),
+      seg('Altura', G, 'eq', [['1', 'Todos iguales'], ['0', 'Según contenido']], { def: '1' }),
       rng('Tamaño del texto en cuadros %', G, 's', { def: 100, min: 60, max: 150 }),
       seg('Forma', G, 'ar', [['3/4', 'Alta'], ['4/5', 'Normal'], ['1/1', 'Cuadrada'], ['4/3', 'Ancha']], { def: '4/5' }),
       rng('Tamaño del catálogo %', G, 'w', { def: 100, min: 40, max: 100 }),
       rng('Espacio entre prendas px', G, 'gap', { def: 24, min: 0, max: 80 }),
       seg('Alinear', G, 'al', [['left', '⟸', 'Izquierda'], ['center', '≡', 'Centro'], ['right', '⟹', 'Derecha']], { def: 'center' })]));
-      root.appendChild(group('Fondo de los textos (nombre, precio, tallas)', [
+      root.appendChild(group('Cómo se elige la talla', [
+      seg('Estilo', G, 'tm', [['pedir', 'Al pedir'], ['chico', 'Junto al precio'], ['boton', 'Botón grande']], { def: 'chico' }),
+      h('div', { class: 'note', text: 'Al pedir: no ocupa espacio; al tocar "Pedir por WhatsApp" salen las tallas y al elegir se abre WhatsApp. Junto al precio: la palabra "Talla ▾" al lado del precio, sin cuadro. Botón grande: el botón completo de antes.' })]));
+    root.appendChild(group('Fondo de los textos (nombre, precio, tallas)', [
       seg('Fondo', G, 'tb', [['1', 'Difuminado'], ['0', 'Sin fondo']], { def: '1' }),
       col('Color', G, 'tbc', '#9aa0a8'),
       rng('Intensidad %', G, 'tbo', { def: 22, min: 0, max: 100 })]));

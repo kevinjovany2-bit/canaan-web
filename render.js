@@ -268,12 +268,12 @@
   PG.TALLAS = TALLAS; PG.tallasDe = tallasDe; PG.pid = pid; PG.slug = slug;
   /* cuadrícula del catálogo: columnas × filas por dispositivo, forma de foto y espacio */
   var CGDEF = { d: { c: 4, f: 0 }, t: { c: 3, f: 0 }, m: { c: 2, f: 0 } };
-  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; return o; }
+  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tm = g.tm || 'chico'; o.eq = g.eq == null ? '1' : String(g.eq); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; return o; }
   function applyCat(b, s, dev) {
     var g = b.querySelector('.cat-g'); if (!g) return; var c = catCfg(s, dev), cols = Math.max(1, Math.min(8, c.c | 0));
     g.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))'; g.style.gap = c.gap + 'px'; g.style.maxWidth = c.w + '%';
     g.style.marginLeft = c.al === 'left' ? '0' : 'auto'; g.style.marginRight = c.al === 'right' ? '0' : 'auto';
-    g.style.setProperty('--cat-ar', c.ar); g.style.setProperty('--cat-s', c.s / 100); g.dataset.cols = cols; g.dataset.card = c.card; g.dataset.tb = c.tb; g.style.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(c.tbc) + ' ' + c.tbo + '%, transparent)');
+    g.style.setProperty('--cat-ar', c.ar); g.style.setProperty('--cat-s', c.s / 100); g.dataset.cols = cols; g.dataset.card = c.card; g.dataset.tb = c.tb; g.dataset.tm = c.tm; g.style.alignItems = c.eq === '0' ? 'start' : ''; g.style.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(c.tbc) + ' ' + c.tbo + '%, transparent)');
     var lim = c.f > 0 ? cols * c.f : 1e9; Array.prototype.forEach.call(g.children, function (a, i) { a.style.display = i < lim ? '' : 'none'; });
   }
   PG.catCfg = catCfg;
@@ -288,11 +288,11 @@
   function fillOne(b, ctx, s) {
     var S = W.SITIO || {}, L = precioL, libre = !s || !s.pm || s.pm === 'todas';
     var t = b.querySelector('.cat-t'), tx = libre && filtro !== 'Todo' ? filtro : (s && s.pm === 'cat' && s.pc ? s.pc : (S.tituloProductos || 'Novedades')); t.dataset.o = tx; t.textContent = tx;
-    var lista = prendasDe(s);
+    var lista = prendasDe(s), chico = !!(s && ctx && catCfg(s, ctx.dev).tm === 'chico');
     b.querySelector('.cat-g').innerHTML = lista.length ? lista.map(function (p) {
       var f = p.foto ? '<img data-p="images/' + esc(p.foto) + '" src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy">' : '<span class="plata">' + esc(p.nombre.charAt(0)) + '</span>';
       var ts = tallasDe(p), uno = ts.length === 1 ? ts[0] : '';
-      var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"' + K('tbt', 'Botón de tallas', 'btn') + '><span class="tl-v"' + K('tbl', 'Texto de tallas', 'text', !uno) + '>' + (uno ? 'Talla: ' + esc(uno) : 'Elegir talla') + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Tallas disponibles</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '"' + K('tc', 'Opciones de talla', 'btn') + '>' + esc(t) + '</button>'; }).join('') + '</span></div></div>' : '';
+      var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"' + K('tbt', 'Botón de tallas', 'btn') + '><span class="tl-v"' + K('tbl', 'Texto de tallas', 'text', !uno) + '>' + (uno ? 'Talla: ' + esc(uno) : (chico ? 'Talla' : 'Elegir talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l"' + K('tpl', 'Título del cuadro de tallas', 'text', 1) + '>Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '"' + K('tc', 'Opciones de talla', 'btn') + '>' + esc(t) + '</button>'; }).join('') + '</span></div></div>' : '';
       return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + K('pcard', 'Cuadro de la prenda', 'card') + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '>' + L(p.precio) + '</span>' + tz + '<a class="btn" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
     }).join('') : (ctx && ctx.edit ? '<p class="cat-vacio">Este catálogo no tiene prendas. Elígelas en el panel derecho → "Prendas de este catálogo".</p>' : '');
     if (ctx && s) { paintKs(ctx, b, s); applyCat(b, s, ctx.dev); }
@@ -321,6 +321,9 @@
     } else if (el.dataset.s) el.textContent = r.tx != null ? r.tx : el.dataset.o;
     if (kind === 'btn' || kind === 'card' || kind === 'text') {
       if (r.pd != null) st.padding = r.pd + 'px';
+      var lados = r.pt != null || r.pb != null || r.pl != null || r.pr != null;
+      if (r.pt != null) st.paddingTop = r.pt + 'px'; if (r.pb != null) st.paddingBottom = r.pb + 'px'; if (r.pl != null) st.paddingLeft = r.pl + 'px'; if (r.pr != null) st.paddingRight = r.pr + 'px';
+      if (el.classList.contains('prod')) el.toggleAttribute('data-lados', lados);
       if (r.bg && el.classList.contains('tb') && !r.sh) st.boxShadow = 'none';
       if (r.wp) { st.width = r.wp + '%'; st.maxWidth = '100%'; st.alignSelf = 'auto'; st.marginLeft = r.wa === 'l' ? '0' : 'auto'; st.marginRight = r.wa === 'r' ? '0' : 'auto'; }
       if (r.hp) { st.height = r.hp + 'px'; st.aspectRatio = 'auto'; if (kind === 'btn') { st.display = 'flex'; st.alignItems = 'center'; st.justifyContent = 'center'; st.paddingTop = st.paddingBottom = '0'; } }
@@ -358,7 +361,7 @@
     }
     paintBg(ctx, s, n);
     if (s.t === 'catalogo') { if (first) applyCat(n, s, ctx.dev); else fillOne(n, ctx, s); }
-    if (s.t !== 'libre') { n.style.paddingTop = n.style.paddingBottom = s.py != null ? s.py + 'px' : ''; n.dataset.sid = s.id; paintKs(ctx, n, s); }
+    if (s.t !== 'libre') { n.style.paddingTop = n.style.paddingBottom = s.py != null ? s.py + 'px' : ''; n.dataset.sid = s.id; paintKs(ctx, n, s); if (s.t === 'catalogo') applyCat(n, s, ctx.dev); }
     n.classList.toggle('hid', !!s.hide);
     if (first && !ctx.edit && s.an && s.an.t) armAnim(ctx, n, n.querySelector(s.t === 'libre' ? '.swrap' : '.sin') || n, s.an, null);
   }
@@ -424,11 +427,20 @@
   }
   PG.elegirTalla = elegirTalla;
   function pedidoClick(e) {
-    var tl = e.target.closest('.prod .tl'); if (tl) { e.preventDefault(); elegirTalla(tl.closest('.prod'), tl.dataset.t); return true; }
+    var tl = e.target.closest('.prod .tl'); if (tl) {
+      e.preventDefault(); var ap = tl.closest('.prod'); elegirTalla(ap, tl.dataset.t);
+      if (ap.dataset.ir) { delete ap.dataset.ir; var wa = ap.querySelector('.det .btn'); if (wa) W.open(wa.href, '_blank', 'noopener'); }
+      return true;
+    }
     var tb = e.target.closest('.prod .tl-btn'); if (tb) { e.preventDefault(); var ar = tb.closest('.prod'); cerrarTallas(ar); ar.classList.toggle('open'); return true; }
     if (!e.target.closest('.tl-pop')) cerrarTallas();
     var bt = e.target.closest('.prod .det .btn'); if (!bt) return false;
-    var art = bt.closest('.prod'); if (art.querySelector('.tl') && !art.dataset.talla) { e.preventDefault(); art.classList.remove('need'); void art.offsetWidth; art.classList.add('need', 'open'); }
+    var art = bt.closest('.prod'), g = art.closest('.cat-g');
+    if (art.querySelector('.tl') && !art.dataset.talla) {
+      e.preventDefault(); cerrarTallas(art);
+      if (g && g.dataset.tm === 'pedir') { art.dataset.ir = '1'; art.classList.add('open'); }   /* elige talla y se abre WhatsApp */
+      else { art.classList.remove('need'); void art.offsetWidth; art.classList.add('need', 'open'); }
+    }
     return true;
   }
   PG.render = render; PG.paintEl = paintEl; PG.buildEl = buildEl; PG.res = res; PG.secRes = secRes; PG.adapted = adapted;

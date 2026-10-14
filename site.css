@@ -157,3 +157,22 @@
 /* quitar el fondo de un texto en particular */
 .pg .cat-g[data-tb="1"] .det .tb.sin-tb{background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding-left:0;padding-right:0}
 .pg .tl-btn .tl-v{min-width:0;overflow-wrap:normal}
+/* estilos de selector de talla: "Al pedir" (sin espacio extra) y "Junto al precio" (botoncito) */
+.pg .cat-g[data-tm="pedir"] .det{position:relative}
+.pg .cat-g[data-tm="pedir"] .det .tallas{position:absolute;left:6px;right:6px;bottom:6px;height:0;margin:0;z-index:20}
+.pg .cat-g[data-tm="pedir"] .tl-btn,.pg .cat-g[data-tm="pedir"] .tl-msg{display:none}
+.pg .cat-g[data-tm="pedir"] .tl-pop{top:auto;bottom:0}
+.pg .cat-g[data-tm="pedir"] .tl-pop .tl-l{font-size:11px;opacity:.8}
+.pg .cat-g[data-tm="chico"] .det{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:6px}
+.pg .cat-g[data-tm="chico"] .det>*{flex:0 0 100%}
+.pg .cat-g[data-tm="chico"] .det>.precio{flex:0 0 auto;white-space:nowrap}
+.pg .cat-g[data-tm="chico"] .det>.tallas{flex:0 0 auto;margin-left:auto}
+.pg .cat-g[data-tm="chico"] .tl-btn{width:auto;padding:2px 0;font-size:11px;font-weight:500;letter-spacing:.14em;gap:5px;white-space:nowrap;background:none;border:0;border-radius:0;box-shadow:none;color:inherit;opacity:.75;transition:opacity .2s}
+.pg .cat-g[data-tm="chico"] .tl-btn:hover,.pg .cat-g[data-tm="chico"] .prod.open .tl-btn{opacity:1}
+.pg .cat-g[data-tm="chico"] .tl-btn i{font-size:8px}
+.pg .cat-g[data-tm="chico"] .prod[data-talla] .tl-btn{opacity:1;font-weight:700;border:0}
+.pg .cat-g[data-tm="chico"] .prod.need .tl-btn{color:#c0392b;opacity:1}
+.pg .cat-g[data-tm="chico"] .tl-pop{left:auto;right:0;width:max-content;min-width:150px;max-width:220px}
+/* lados del cuadro editados uno por uno: los números son exactos */
+.pg .cat-g .prod[data-lados] .det{padding-left:0;padding-right:0;padding-bottom:0}
+.pg .cat-g .prod[data-lados] .foto{border-radius:8px}
