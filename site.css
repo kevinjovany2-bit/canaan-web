@@ -176,7 +176,24 @@
 /* lados del cuadro editados uno por uno: los números son exactos */
 .pg .cat-g .prod[data-lados] .det{padding-left:0;padding-right:0;padding-bottom:0}
 .pg .cat-g .prod[data-lados] .foto{border-radius:8px}
-/* rectángulo de fondo con bordes independientes (Cuadro de la prenda → arrastrar sus 4 lados) */
-.pg .prod[data-rect]{position:relative;isolation:isolate;background:transparent!important;border-color:transparent!important;box-shadow:none!important}
-.pg .prod[data-rect]::before{content:"";position:absolute;z-index:-1;top:var(--it,0);bottom:var(--ib,0);left:var(--il,0);right:var(--ir,0);background:var(--rc-bg,var(--bg,#fff));border:var(--rc-bd,1px solid rgba(0,0,0,.08));border-radius:var(--rc-rad,10px);box-shadow:var(--rc-sh,0 4px 18px rgba(0,0,0,.07));pointer-events:none}
-.pg .cat-g[data-card="0"] .prod[data-rect]::before{background:var(--rc-bg,transparent);border:var(--rc-bd,0);box-shadow:var(--rc-sh,none)}
+/* rectángulo de fondo con bordes independientes (cualquier pieza: arrastrar sus 4 lados) */
+.pg [data-rect]{position:relative;isolation:isolate;background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+.pg [data-rect]::before{content:"";position:absolute;z-index:-1;top:var(--it,0);bottom:var(--ib,0);left:var(--il,0);right:var(--ir,0);background:var(--rc-bg,transparent);border:var(--rc-bd,0 none transparent);border-radius:var(--rc-rad,0);box-shadow:var(--rc-sh,none);pointer-events:none}
+.pg .foto[data-rect]{overflow:visible}
+.pg .foto[data-rect] img{border-radius:inherit}
+/* ===== Diseño "Moderno": tarjeta blanca, foto redondeada, nombre limpio y precio grande ===== */
+.pg .det .pl{display:none}
+.pg .cat-g[data-est="moderno"] .prod{background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:18px;padding:4px;box-shadow:0 18px 40px rgba(0,0,0,.10)}
+.pg .cat-g[data-est="moderno"] .foto{border-radius:14px}
+.pg .cat-g[data-est="moderno"] .det{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-end;align-content:space-between;flex:1 1 auto;column-gap:10px;row-gap:clamp(6px,4cqi,14px);padding:clamp(8px,5cqi,16px) clamp(8px,5cqi,16px) clamp(8px,5cqi,14px)}
+.pg .cat-g[data-est="moderno"] .det>*{flex:0 0 100%;min-width:0}
+.pg .cat-g[data-est="moderno"] .det h3{font-family:var(--fb);font-weight:400;font-size:clamp(13px,7cqi,19px);line-height:1.25;letter-spacing:0;background:none;box-shadow:none;padding:0;color:#111;overflow-wrap:break-word}
+.pg .cat-g[data-est="moderno"] .det>.tallas{flex:0 0 auto;order:2;margin:0 0 .35em}
+.pg .cat-g[data-est="moderno"] .det>.precio{flex:0 1 auto;order:3;margin-left:auto;text-align:right;font-family:var(--fb);font-weight:800;font-size:clamp(16px,10cqi,30px);line-height:1;letter-spacing:-.01em;background:none;box-shadow:none;padding:0;white-space:nowrap;color:#111}
+.pg .cat-g[data-est="moderno"] .det>.btn,.pg .cat-g[data-est="moderno"] .det>.tl-msg{order:4}
+.pg .cat-g[data-est="moderno"] .pl{display:inline;font-style:italic;font-weight:400;font-size:.5em;letter-spacing:0;margin-right:.45em;opacity:.85}
+.pg .cat-g[data-est="moderno"] .tl-btn{width:auto;padding:2px 0;font-size:clamp(9px,5cqi,11px);font-weight:500;letter-spacing:.12em;background:none;border:0;box-shadow:none;color:#111;opacity:.7;white-space:nowrap}
+.pg .cat-g[data-est="moderno"] .tl-pop{left:0;right:auto;width:max-content;min-width:150px;max-width:220px}
+.pg .cat-g[data-wab="0"] .det .btn{display:none}
+.pg .cat-g[data-wab="0"] .prod{cursor:pointer}
+.pg .cat-g[data-est="moderno"] .tl-msg{font-size:11px}

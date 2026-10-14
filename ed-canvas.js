@@ -88,9 +88,9 @@
       var pr = page.getBoundingClientRect(), nodes = ctx.sec[ED.pc.sid].querySelectorAll('[data-k="' + ED.pc.k + '"]');
       nodes.forEach(function (nd, i) {
         var b = nd.getBoundingClientRect(); if (!b.width && !b.height) return; var w = b.width / Z, hh = b.height / Z, ox = 0, oy = 0;
-        var rect = ED.pc.k === 'pcard' && nd.classList.contains('prod');
-        if (rect) { var g = function (k) { return ED.pieceVal(ED.pc.sid, 'pcard', k) || 0; }; ox = g('xr') - g('xl'); oy = g('xb') - g('xt'); w += g('xl') + g('xr'); hh += g('xt') + g('xb'); }
-        var f = mkFrame((b.left - pr.left) / Z + w / 2 - (rect ? (ED.pieceVal(ED.pc.sid, 'pcard', 'xl') || 0) : 0), (b.top - pr.top) / Z + hh / 2 - (rect ? (ED.pieceVal(ED.pc.sid, 'pcard', 'xt') || 0) : 0), w, hh, 0, 'one pc');
+        var rect = /^(text|btn|card)$/.test(nd.dataset.t || '');
+        if (rect) { var g = function (k) { return ED.pieceVal(ED.pc.sid, ED.pc.k, k) || 0; }; ox = g('xr') - g('xl'); oy = g('xb') - g('xt'); w += g('xl') + g('xr'); hh += g('xt') + g('xb'); }
+        var f = mkFrame((b.left - pr.left) / Z + w / 2 - (rect ? (ED.pieceVal(ED.pc.sid, ED.pc.k, 'xl') || 0) : 0), (b.top - pr.top) / Z + hh / 2 - (rect ? (ED.pieceVal(ED.pc.sid, ED.pc.k, 'xt') || 0) : 0), w, hh, 0, 'one pc');
         if (rect && i === 0) [['t', 50, 0, 'n'], ['b', 50, 100, 's'], ['l', 0, 50, 'w'], ['r', 100, 50, 'e']].forEach(function (q) { var x = document.createElement('i'); x.className = 'hd h-' + q[3]; x.dataset.h = 'rx-' + q[0]; x.style.left = q[1] + '%'; x.style.top = q[2] + '%'; x.title = 'Arrastra para mover este borde'; f.appendChild(x); });
         if (i === 0 && nodes.length === 1) { var hd = document.createElement('i'); hd.className = 'hd h-se'; hd.dataset.h = 'psc'; hd.style.left = '100%'; hd.style.top = '100%'; f.appendChild(hd); }
         if (i === 0) { var t = document.createElement('span'); t.className = 'tag'; t.textContent = tagTxt || ((nd.dataset.n || 'Pieza') + (nodes.length > 1 ? ' · ×' + nodes.length : '')); f.appendChild(t); }

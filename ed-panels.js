@@ -274,8 +274,8 @@
       num(kind === 'btn' ? 'Alto px (vacío = automático)' : 'Alto px (vacío = según forma)', T, 'hp', { min: 20, max: 1200 }),
       seg('Alinear', T, 'wa', [['l', '⟸', 'Izquierda'], ['c', '≡', 'Centro'], ['r', '⟹', 'Derecha']], { def: 'c' }),
       btn('Tamaño automático', function () { T.set({ wp: undefined, hp: undefined, wa: undefined }, 'wp'); setTimeout(build, 0); }, 'sm')]));
-    if (nd.classList.contains('prod')) root.appendChild(group('Bordes del rectángulo (' + DEVN[ED.dev] + ')', [
-      h('div', { class: 'note', text: 'Arrastra los puntos blancos de los 4 lados en el lienzo: el rectángulo se estira o se encoge y lo de adentro (foto, textos, botones) no cambia. También puedes escribir los px: positivo = sale hacia afuera, negativo = entra.' }),
+    if (kind === 'btn' || kind === 'card' || kind === 'text') root.appendChild(group('Bordes del rectángulo (' + DEVN[ED.dev] + ')', [
+      h('div', { class: 'note', text: 'Arrastra los puntos blancos de los 4 lados en el lienzo: el rectángulo se estira o se encoge y lo de adentro (texto, foto, botón) no cambia. En textos, ponle color en "Fondo y bordes" para ver el rectángulo. También puedes escribir los px: positivo = sale hacia afuera, negativo = entra.' }),
       rowOf([num('Arriba', T, 'xt', { def: 0, min: -400, max: 400 }), num('Abajo', T, 'xb', { def: 0, min: -400, max: 400 })]),
       rowOf([num('Izquierda', T, 'xl', { def: 0, min: -400, max: 400 }), num('Derecha', T, 'xr', { def: 0, min: -400, max: 400 })]),
       btn('Bordes como al inicio', function () { T.set({ xt: undefined, xb: undefined, xl: undefined, xr: undefined, pt: undefined, pb: undefined, pl: undefined, pr: undefined }, 'xt'); setTimeout(build, 0); }, 'sm')]));
@@ -332,7 +332,11 @@
       rng('Tamaño del catálogo %', G, 'w', { def: 100, min: 40, max: 100 }),
       rng('Espacio entre prendas px', G, 'gap', { def: 24, min: 0, max: 80 }),
       seg('Alinear', G, 'al', [['left', '⟸', 'Izquierda'], ['center', '≡', 'Centro'], ['right', '⟹', 'Derecha']], { def: 'center' })]));
-      root.appendChild(group('Cómo se elige la talla', [
+      root.appendChild(group('Diseño de la prenda', [
+      btn('✦ Aplicar diseño Moderno (tarjeta blanca, precio grande)', function () { aplicarModerno(sid); }, 'sm pri wide'),
+      seg('Estilo', G, 'est', [['clasico', 'Clásico'], ['moderno', 'Moderno']], { def: 'clasico' }),
+      seg('Botón de WhatsApp', G, 'wab', [['1', 'Mostrar'], ['0', 'Ocultar (tocar la prenda para pedir)']], { def: PG.catCfg(ED.sec(sid), ED.dev).est === 'moderno' ? '0' : '1' })]));
+    root.appendChild(group('Cómo se elige la talla', [
       seg('Estilo', G, 'tm', [['pedir', 'Al pedir'], ['chico', 'Junto al precio'], ['boton', 'Botón grande']], { def: 'chico' }),
       h('div', { class: 'note', text: 'Al pedir: no ocupa espacio; al tocar "Pedir por WhatsApp" salen las tallas y al elegir se abre WhatsApp. Junto al precio: la palabra "Talla ▾" al lado del precio, sin cuadro. Botón grande: el botón completo de antes.' })]));
     root.appendChild(group('Fondo de los textos (nombre, precio, tallas)', [
@@ -361,6 +365,15 @@
     }
     kids.push(h('div', { class: 'note', text: 'Para otro catálogo: Añadir → "+ Catálogo de prendas". Muévelo con ▲ ▼ arriba en este panel, duplícalo con ⧉ o bórralo con 🗑.' }));
     root.appendChild(group('Prendas de este catálogo', kids));
+  }
+  function aplicarModerno(sid) {
+    if (!confirm('Aplicar el diseño Moderno a este catálogo?\nSe quitan los estilos que pusiste a mano en sus piezas (fondos grises, tamaños, posiciones) para que quede limpio. Puedes deshacer con Ctrl+Z.')) return;
+    ED.change(function (d) {
+      var x = d.secs.filter(function (q) { return q.id === sid; })[0]; if (!x) return; var tt = x.k && x.k.tit && x.k.tit.tx;
+      x.cg = Object.assign({}, x.cg || {}, { est: 'moderno', tb: '0', ar: '6/5', card: '1', eq: '1', tm: 'chico', gap: 22, s: undefined });
+      delete x.cg.wab; x.k = {}; if (tt != null) x.k.tit = { tx: tt }; delete x.ko;
+    }, null, { full: true });
+    ED.toast('✔ Diseño Moderno aplicado. Publica para verlo en la web.', 'ok');
   }
   function aplicarATodos(sid) {
     var otros = ED.doc.secs.filter(function (x) { return x.t === 'catalogo' && x.id !== sid; });

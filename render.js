@@ -268,12 +268,12 @@
   PG.TALLAS = TALLAS; PG.tallasDe = tallasDe; PG.pid = pid; PG.slug = slug;
   /* cuadrícula del catálogo: columnas × filas por dispositivo, forma de foto y espacio */
   var CGDEF = { d: { c: 4, f: 0 }, t: { c: 3, f: 0 }, m: { c: 2, f: 0 } };
-  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tm = g.tm || 'chico'; o.eq = g.eq == null ? '1' : String(g.eq); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; return o; }
+  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tm = g.tm || 'chico'; o.eq = g.eq == null ? '1' : String(g.eq); o.est = g.est || 'clasico'; o.wab = g.wab == null ? (o.est === 'moderno' ? '0' : '1') : String(g.wab); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; return o; }
   function applyCat(b, s, dev) {
     var g = b.querySelector('.cat-g'); if (!g) return; var c = catCfg(s, dev), cols = Math.max(1, Math.min(8, c.c | 0));
     g.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))'; g.style.gap = c.gap + 'px'; g.style.maxWidth = c.w + '%';
     g.style.marginLeft = c.al === 'left' ? '0' : 'auto'; g.style.marginRight = c.al === 'right' ? '0' : 'auto';
-    g.style.setProperty('--cat-ar', c.ar); g.style.setProperty('--cat-s', c.s / 100); g.dataset.cols = cols; g.dataset.card = c.card; g.dataset.tb = c.tb; g.dataset.tm = c.tm; g.style.alignItems = c.eq === '0' ? 'start' : ''; g.style.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(c.tbc) + ' ' + c.tbo + '%, transparent)');
+    g.style.setProperty('--cat-ar', c.ar); g.style.setProperty('--cat-s', c.s / 100); g.dataset.cols = cols; g.dataset.card = c.card; g.dataset.tb = c.tb; g.dataset.tm = c.tm; g.dataset.est = c.est; g.dataset.wab = c.wab; g.style.alignItems = c.eq === '0' ? 'start' : ''; g.style.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(c.tbc) + ' ' + c.tbo + '%, transparent)');
     var lim = c.f > 0 ? cols * c.f : 1e9; Array.prototype.forEach.call(g.children, function (a, i) { a.style.display = i < lim ? '' : 'none'; });
   }
   PG.catCfg = catCfg;
@@ -293,7 +293,7 @@
       var f = p.foto ? '<img data-p="images/' + esc(p.foto) + '" src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy">' : '<span class="plata">' + esc(p.nombre.charAt(0)) + '</span>';
       var ts = tallasDe(p), uno = ts.length === 1 ? ts[0] : '';
       var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"' + K('tbt', 'Botón de tallas', 'btn') + '><span class="tl-v"' + K('tbl', 'Texto de tallas', 'text', !uno) + '>' + (uno ? 'Talla: ' + esc(uno) : (chico ? 'Talla' : 'Elegir talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l"' + K('tpl', 'Título del cuadro de tallas', 'text', 1) + '>Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '"' + K('tc', 'Opciones de talla', 'btn') + '>' + esc(t) + '</button>'; }).join('') + '</span></div></div>' : '';
-      return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + K('pcard', 'Cuadro de la prenda', 'card') + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '>' + L(p.precio) + '</span>' + tz + '<a class="btn" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
+      return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + K('pcard', 'Cuadro de la prenda', 'card') + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '><i class="pl">Precio</i>' + L(p.precio) + '</span>' + tz + '<a class="btn" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
     }).join('') : (ctx && ctx.edit ? '<p class="cat-vacio">Este catálogo no tiene prendas. Elígelas en el panel derecho → "Prendas de este catálogo".</p>' : '');
     if (ctx && s) { paintKs(ctx, b, s); applyCat(b, s, ctx.dev); }
   }
@@ -302,6 +302,15 @@
   }
 
   /* ---------- piezas editables dentro de los bloques ---------- */
+  function rectApply(el, r) {
+    var st = el.style, rx = r.xt != null || r.xb != null || r.xl != null || r.xr != null;
+    el.removeAttribute('data-rect'); if (!rx) return;
+    var cs = getComputedStyle(el);
+    st.setProperty('--rc-bg', cs.backgroundImage && cs.backgroundImage !== 'none' ? cs.backgroundImage + ',' + cs.backgroundColor : cs.backgroundColor);
+    st.setProperty('--rc-bd', cs.borderTopWidth + ' ' + cs.borderTopStyle + ' ' + cs.borderTopColor); st.setProperty('--rc-rad', cs.borderRadius); st.setProperty('--rc-sh', cs.boxShadow);
+    st.setProperty('--it', -(r.xt || 0) + 'px'); st.setProperty('--ib', -(r.xb || 0) + 'px'); st.setProperty('--il', -(r.xl || 0) + 'px'); st.setProperty('--ir', -(r.xr || 0) + 'px');
+    el.setAttribute('data-rect', '');
+  }
   function applyPiece(ctx, el, r, i) {
     var kind = el.dataset.t, st = el.style, ph = kind === 'text' || kind === 'btn' || kind === 'logo';
     if (el._an) { el._an.cancel(); el._an = null; } el.onmouseenter = null;
@@ -323,16 +332,7 @@
       if (r.pd != null) st.padding = r.pd + 'px';
       var lados = r.pt != null || r.pb != null || r.pl != null || r.pr != null;
       if (r.pt != null) st.paddingTop = r.pt + 'px'; if (r.pb != null) st.paddingBottom = r.pb + 'px'; if (r.pl != null) st.paddingLeft = r.pl + 'px'; if (r.pr != null) st.paddingRight = r.pr + 'px';
-      if (el.classList.contains('prod')) {
-        el.toggleAttribute('data-lados', lados);
-        /* rectángulo de fondo independiente: cada borde se mueve sin tocar lo de adentro */
-        var rx = r.xt != null || r.xb != null || r.xl != null || r.xr != null; el.toggleAttribute('data-rect', rx);
-        if (rx) {
-          st.setProperty('--it', -(r.xt || 0) + 'px'); st.setProperty('--ib', -(r.xb || 0) + 'px'); st.setProperty('--il', -(r.xl || 0) + 'px'); st.setProperty('--ir', -(r.xr || 0) + 'px');
-          if (r.bg) st.setProperty('--rc-bg', fillCss(r.bg)); if (r.rad != null) st.setProperty('--rc-rad', r.rad + 'px');
-          if (r.bw != null) st.setProperty('--rc-bd', r.bw + 'px ' + (r.bs || 'solid') + ' ' + tok(r.bc || '@tx')); if (r.sh) st.setProperty('--rc-sh', shCss(r.sh));
-        }
-      }
+      if (el.classList.contains('prod')) el.toggleAttribute('data-lados', lados);
       if (r.bg && el.classList.contains('tb') && !r.sh) st.boxShadow = 'none';
       if (r.wp) { st.width = r.wp + '%'; st.maxWidth = '100%'; st.alignSelf = 'auto'; st.marginLeft = r.wa === 'l' ? '0' : 'auto'; st.marginRight = r.wa === 'r' ? '0' : 'auto'; }
       if (r.hp) { st.height = r.hp + 'px'; st.aspectRatio = 'auto'; if (kind === 'btn') { st.display = 'flex'; st.alignItems = 'center'; st.justifyContent = 'center'; st.paddingTop = st.paddingBottom = '0'; } }
@@ -344,6 +344,8 @@
     }
     if (kind === 'line') { st.background = fillCss(r.bg || '@c2'); if (r.w) st.width = r.w + 'px'; if (r.h) st.height = r.h + 'px'; }
     if (kind === 'icon') { if (r.col) st.stroke = tok(r.col); if (r.sz) { st.width = r.sz + 'px'; st.height = r.sz + 'px'; } }
+    /* rectángulo de fondo independiente: cada borde se mueve sin tocar lo de adentro */
+    if (kind === 'btn' || kind === 'card' || kind === 'text') { if (el.isConnected) rectApply(el, r); else setTimeout(function () { rectApply(el, r); }, 0); }
     var mv = r.dx || r.dy || r.r || (r.sc != null && r.sc !== 1);
     if (r.dx || r.dy) st.translate = (r.dx || 0) + 'px ' + (r.dy || 0) + 'px'; if (r.r) st.rotate = r.r + 'deg'; if (r.sc != null && r.sc !== 1) st.scale = r.sc;
     if (mv && /^(A|SPAN|I)$/.test(el.tagName)) st.display = 'inline-block';
@@ -443,11 +445,13 @@
     }
     var tb = e.target.closest('.prod .tl-btn'); if (tb) { e.preventDefault(); var ar = tb.closest('.prod'); cerrarTallas(ar); ar.classList.toggle('open'); return true; }
     if (!e.target.closest('.tl-pop')) cerrarTallas();
-    var bt = e.target.closest('.prod .det .btn'); if (!bt) return false;
+    var bt = e.target.closest('.prod .det .btn');
+    if (!bt) { var ac = e.target.closest('.cat-g[data-wab="0"] .prod'); if (!ac || e.target.closest('.tallas')) return false; bt = ac.querySelector('.det .btn'); if (!bt) return false;
+      if (!(ac.querySelector('.tl') && !ac.dataset.talla)) { e.preventDefault(); W.open(bt.href, '_blank', 'noopener'); return true; } }
     var art = bt.closest('.prod'), g = art.closest('.cat-g');
     if (art.querySelector('.tl') && !art.dataset.talla) {
       e.preventDefault(); cerrarTallas(art);
-      if (g && g.dataset.tm === 'pedir') { art.dataset.ir = '1'; art.classList.add('open'); }   /* elige talla y se abre WhatsApp */
+      if (g && (g.dataset.tm === 'pedir' || g.dataset.wab === '0')) { art.dataset.ir = '1'; art.classList.add('open'); }   /* elige talla y se abre WhatsApp */
       else { art.classList.remove('need'); void art.offsetWidth; art.classList.add('need', 'open'); }
     }
     return true;
