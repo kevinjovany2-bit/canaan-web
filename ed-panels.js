@@ -274,12 +274,11 @@
       num(kind === 'btn' ? 'Alto px (vacío = automático)' : 'Alto px (vacío = según forma)', T, 'hp', { min: 20, max: 1200 }),
       seg('Alinear', T, 'wa', [['l', '⟸', 'Izquierda'], ['c', '≡', 'Centro'], ['r', '⟹', 'Derecha']], { def: 'c' }),
       btn('Tamaño automático', function () { T.set({ wp: undefined, hp: undefined, wa: undefined }, 'wp'); setTimeout(build, 0); }, 'sm')]));
-    if (nd.classList.contains('prod')) root.appendChild(group('Lados del cuadro (' + DEVN[ED.dev] + ')', [
-      h('div', { class: 'note', text: 'Mueve cada borde por separado (px). Ej.: baja "Abajo" para subir el borde de abajo. Arrastra el nombre del campo para ajustar con el mouse.' }),
-      rowOf([num('Arriba', T, 'pt', { min: 0, max: 200 }), num('Abajo', T, 'pb', { min: 0, max: 200 })]),
-      rowOf([num('Izquierda', T, 'pl', { min: 0, max: 200 }), num('Derecha', T, 'pr', { min: 0, max: 200 })]),
-      btn('Lados automáticos', function () { T.set({ pt: undefined, pb: undefined, pl: undefined, pr: undefined }, 'pt'); setTimeout(build, 0); }, 'sm'),
-      h('div', { class: 'note', text: 'Si sobra espacio abajo en algunos cuadros: toca la sección → "Cuadros de las prendas" → Altura: Según contenido.' })]));
+    if (nd.classList.contains('prod')) root.appendChild(group('Bordes del rectángulo (' + DEVN[ED.dev] + ')', [
+      h('div', { class: 'note', text: 'Arrastra los puntos blancos de los 4 lados en el lienzo: el rectángulo se estira o se encoge y lo de adentro (foto, textos, botones) no cambia. También puedes escribir los px: positivo = sale hacia afuera, negativo = entra.' }),
+      rowOf([num('Arriba', T, 'xt', { def: 0, min: -400, max: 400 }), num('Abajo', T, 'xb', { def: 0, min: -400, max: 400 })]),
+      rowOf([num('Izquierda', T, 'xl', { def: 0, min: -400, max: 400 }), num('Derecha', T, 'xr', { def: 0, min: -400, max: 400 })]),
+      btn('Bordes como al inicio', function () { T.set({ xt: undefined, xb: undefined, xl: undefined, xr: undefined, pt: undefined, pb: undefined, pl: undefined, pr: undefined }, 'xt'); setTimeout(build, 0); }, 'sm')]));
     if (kind === 'btn' || kind === 'card' || kind === 'text') root.appendChild(group('Fondo y bordes', [fill('Fondo', T, 'bg', kind === 'btn' ? '@c1' : kind === 'text' ? 'none' : '@c3'), num('Espacio interior px', T, 'pd', { min: 0, max: 80 })].concat(borderG(T, 100))));
     if (nd.classList.contains('tb') && kind === 'text') root.appendChild(group('Fondo detrás del texto', [
       seg('Fondo', T, 'tbg', [['1', 'Con fondo'], ['0', 'Sin fondo']], { def: '1' }),

@@ -176,3 +176,7 @@
 /* lados del cuadro editados uno por uno: los números son exactos */
 .pg .cat-g .prod[data-lados] .det{padding-left:0;padding-right:0;padding-bottom:0}
 .pg .cat-g .prod[data-lados] .foto{border-radius:8px}
+/* rectángulo de fondo con bordes independientes (Cuadro de la prenda → arrastrar sus 4 lados) */
+.pg .prod[data-rect]{position:relative;isolation:isolate;background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+.pg .prod[data-rect]::before{content:"";position:absolute;z-index:-1;top:var(--it,0);bottom:var(--ib,0);left:var(--il,0);right:var(--ir,0);background:var(--rc-bg,var(--bg,#fff));border:var(--rc-bd,1px solid rgba(0,0,0,.08));border-radius:var(--rc-rad,10px);box-shadow:var(--rc-sh,0 4px 18px rgba(0,0,0,.07));pointer-events:none}
+.pg .cat-g[data-card="0"] .prod[data-rect]::before{background:var(--rc-bg,transparent);border:var(--rc-bd,0);box-shadow:var(--rc-sh,none)}

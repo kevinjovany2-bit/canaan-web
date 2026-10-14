@@ -323,7 +323,16 @@
       if (r.pd != null) st.padding = r.pd + 'px';
       var lados = r.pt != null || r.pb != null || r.pl != null || r.pr != null;
       if (r.pt != null) st.paddingTop = r.pt + 'px'; if (r.pb != null) st.paddingBottom = r.pb + 'px'; if (r.pl != null) st.paddingLeft = r.pl + 'px'; if (r.pr != null) st.paddingRight = r.pr + 'px';
-      if (el.classList.contains('prod')) el.toggleAttribute('data-lados', lados);
+      if (el.classList.contains('prod')) {
+        el.toggleAttribute('data-lados', lados);
+        /* rectángulo de fondo independiente: cada borde se mueve sin tocar lo de adentro */
+        var rx = r.xt != null || r.xb != null || r.xl != null || r.xr != null; el.toggleAttribute('data-rect', rx);
+        if (rx) {
+          st.setProperty('--it', -(r.xt || 0) + 'px'); st.setProperty('--ib', -(r.xb || 0) + 'px'); st.setProperty('--il', -(r.xl || 0) + 'px'); st.setProperty('--ir', -(r.xr || 0) + 'px');
+          if (r.bg) st.setProperty('--rc-bg', fillCss(r.bg)); if (r.rad != null) st.setProperty('--rc-rad', r.rad + 'px');
+          if (r.bw != null) st.setProperty('--rc-bd', r.bw + 'px ' + (r.bs || 'solid') + ' ' + tok(r.bc || '@tx')); if (r.sh) st.setProperty('--rc-sh', shCss(r.sh));
+        }
+      }
       if (r.bg && el.classList.contains('tb') && !r.sh) st.boxShadow = 'none';
       if (r.wp) { st.width = r.wp + '%'; st.maxWidth = '100%'; st.alignSelf = 'auto'; st.marginLeft = r.wa === 'l' ? '0' : 'auto'; st.marginRight = r.wa === 'r' ? '0' : 'auto'; }
       if (r.hp) { st.height = r.hp + 'px'; st.aspectRatio = 'auto'; if (kind === 'btn') { st.display = 'flex'; st.alignItems = 'center'; st.justifyContent = 'center'; st.paddingTop = st.paddingBottom = '0'; } }
