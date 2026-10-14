@@ -133,7 +133,7 @@
 /* selector de tallas: botón "Elegir talla" que despliega un cuadro con las disponibles */
 .pg .det .tallas{opacity:1;position:relative}
 .pg .cat-g[data-tb="1"] .det .tallas.tb{padding:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
-.pg .tl-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;font:inherit;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:8px 10px;border:1px solid rgba(0,0,0,.18);border-radius:6px;background:var(--cat-tb,#f1f1f3);color:inherit;cursor:pointer;box-sizing:border-box;text-align:left}
+.pg .tl-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;font:inherit;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 9px;line-height:1.2;border:1px solid rgba(0,0,0,.18);border-radius:6px;background:var(--cat-tb,#f1f1f3);color:inherit;cursor:pointer;box-sizing:border-box;text-align:left}
 .pg .cat-g[data-tb="0"] .tl-btn{background:#fff}
 .pg .tl-btn i{font-style:normal;transition:transform .2s}
 .pg .prod.open .tl-btn i{transform:rotate(180deg)}
@@ -143,10 +143,10 @@
 @keyframes pg-pop{from{opacity:0;transform:translateY(-4px)}}
 .pg .tl-pop .tl-l{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:7px}
 .pg .tl-pop .tl-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px}
-.pg .tl{font:inherit;font-size:13px;font-weight:600;padding:8px 4px;border:1px solid rgba(0,0,0,.2);background:#fff;color:#111;border-radius:6px;cursor:pointer;line-height:1.1}
+.pg .tl{font:inherit;font-size:12px;font-weight:600;padding:6px 4px;border:1px solid rgba(0,0,0,.2);background:#fff;color:#111;border-radius:6px;cursor:pointer;line-height:1.1}
 .pg .tl:hover{border-color:var(--c1)}
 .pg .tl.on{background:var(--c1);color:var(--bg);border-color:var(--c1)}
-.pg.edit .tl,.pg.edit .tl-btn{pointer-events:none}
+.pg.edit .tl-btn{cursor:pointer}
 .pg .tl-msg{display:none;color:#c0392b;font-size:12px;font-weight:600}
 .pg .prod.need .tl-msg{display:block}
 .pg .prod.need .tl-btn{animation:pg-shake .45s;border-color:#c0392b}
@@ -154,3 +154,5 @@
 .pg .prod.open{position:relative;z-index:15}
 .pg .cat-vacio{grid-column:1/-1;text-align:center;padding:30px;border:2px dashed #ccc;border-radius:10px;color:#888;font:14px system-ui}
 .pg .prod.hl{outline:3px solid var(--c1);outline-offset:4px;border-radius:10px;transition:outline-color 1s}
+/* quitar el fondo de un texto en particular */
+.pg .cat-g[data-tb="1"] .det .tb.sin-tb{background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding-left:0;padding-right:0}

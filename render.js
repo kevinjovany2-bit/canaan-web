@@ -292,8 +292,8 @@
     b.querySelector('.cat-g').innerHTML = lista.length ? lista.map(function (p) {
       var f = p.foto ? '<img data-p="images/' + esc(p.foto) + '" src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy">' : '<span class="plata">' + esc(p.nombre.charAt(0)) + '</span>';
       var ts = tallasDe(p), uno = ts.length === 1 ? ts[0] : '';
-      var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : 'Elegir talla') + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Tallas disponibles</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span></div></div>' : '';
-      return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '>' + L(p.precio) + '</span>' + tz + '<a class="btn" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
+      var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"' + K('tbt', 'Botón de tallas', 'btn') + '><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : 'Elegir talla') + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Tallas disponibles</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '"' + K('tc', 'Opciones de talla', 'btn') + '>' + esc(t) + '</button>'; }).join('') + '</span></div></div>' : '';
+      return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + K('pcard', 'Cuadro de la prenda', 'card') + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '>' + L(p.precio) + '</span>' + tz + '<a class="btn" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
     }).join('') : (ctx && ctx.edit ? '<p class="cat-vacio">Este catálogo no tiene prendas. Elígelas en el panel derecho → "Prendas de este catálogo".</p>' : '');
     if (ctx && s) { paintKs(ctx, b, s); applyCat(b, s, ctx.dev); }
   }
@@ -319,10 +319,16 @@
       var im = el.querySelector('img'); if (im) { im.style.height = (r.ih || 46) + 'px'; im.style.display = 'block'; } else if (r.tx != null) el.textContent = r.tx;
       el.classList.toggle('plata', el.dataset.plata === '1' && !r.col && !has);
     } else if (el.dataset.s) el.textContent = r.tx != null ? r.tx : el.dataset.o;
-    if (kind === 'btn' || kind === 'card') {
+    if (kind === 'btn' || kind === 'card' || kind === 'text') {
+      if (r.pd != null) st.padding = r.pd + 'px';
+      if (r.bg && el.classList.contains('tb') && !r.sh) st.boxShadow = 'none';
       if (r.wp) { st.width = r.wp + '%'; st.maxWidth = '100%'; st.alignSelf = 'auto'; st.marginLeft = r.wa === 'l' ? '0' : 'auto'; st.marginRight = r.wa === 'r' ? '0' : 'auto'; }
       if (r.hp) { st.height = r.hp + 'px'; st.aspectRatio = 'auto'; if (kind === 'btn') { st.display = 'flex'; st.alignItems = 'center'; st.justifyContent = 'center'; st.paddingTop = st.paddingBottom = '0'; } }
       if (r.bg) st.background = fillCss(r.bg); if (r.bw != null) st.border = r.bw + 'px ' + (r.bs || 'solid') + ' ' + tok(r.bc || '@tx'); if (r.rad != null) st.borderRadius = r.rad + 'px'; if (r.sh) st.boxShadow = shCss(r.sh);
+    }
+    if (el.classList.contains('tb')) {
+      el.classList.toggle('sin-tb', r.tbg === '0');
+      if (r.tbc || r.tbo != null) st.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(r.tbc || '#9aa0a8') + ' ' + (r.tbo == null ? 22 : r.tbo) + '%, transparent)');
     }
     if (kind === 'line') { st.background = fillCss(r.bg || '@c2'); if (r.w) st.width = r.w + 'px'; if (r.h) st.height = r.h + 'px'; }
     if (kind === 'icon') { if (r.col) st.stroke = tok(r.col); if (r.sz) { st.width = r.sz + 'px'; st.height = r.sz + 'px'; } }

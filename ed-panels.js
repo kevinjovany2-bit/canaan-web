@@ -269,13 +269,17 @@
       if (kind !== 'logo' || !nd.querySelector('img')) root.appendChild(group('Tipografía', tg));
       root.appendChild(group('Sombra de texto', [shadow('Sombra', T, 'tsh', false)], true));
     }
-    if (kind === 'btn' || kind === 'card') root.appendChild(group('Tamaño (' + DEVN[ED.dev] + ')', [
+    if (kind === 'btn' || kind === 'card' || kind === 'text') root.appendChild(group('Tamaño (' + DEVN[ED.dev] + ')', [
       rng('Ancho % del cuadro', T, 'wp', { def: 100, min: 20, max: 100 }),
       num(kind === 'btn' ? 'Alto px (vacío = automático)' : 'Alto px (vacío = según forma)', T, 'hp', { min: 20, max: 1200 }),
       seg('Alinear', T, 'wa', [['l', '⟸', 'Izquierda'], ['c', '≡', 'Centro'], ['r', '⟹', 'Derecha']], { def: 'c' }),
       btn('Tamaño automático', function () { T.set({ wp: undefined, hp: undefined, wa: undefined }, 'wp'); setTimeout(build, 0); }, 'sm')]));
-    if (kind === 'btn' || kind === 'card') root.appendChild(group('Fondo y bordes', [fill('Fondo', T, 'bg', kind === 'btn' ? '@c1' : '@c3')].concat(borderG(T, 100))));
-    if (kind === 'btn' || kind === 'card') root.appendChild(group('Sombra', [shadow('Sombra', T, 'sh', true)], true));
+    if (kind === 'btn' || kind === 'card' || kind === 'text') root.appendChild(group('Fondo y bordes', [fill('Fondo', T, 'bg', kind === 'btn' ? '@c1' : kind === 'text' ? 'none' : '@c3'), num('Espacio interior px', T, 'pd', { min: 0, max: 80 })].concat(borderG(T, 100))));
+    if (nd.classList.contains('tb') && kind === 'text') root.appendChild(group('Fondo detrás del texto', [
+      seg('Fondo', T, 'tbg', [['1', 'Con fondo'], ['0', 'Sin fondo']], { def: '1' }),
+      col('Color', T, 'tbc', '#9aa0a8'), rng('Intensidad %', T, 'tbo', { def: 22, min: 0, max: 100 }),
+      h('div', { class: 'note', text: 'Para quitarlo en todo el catálogo: toca la sección → "Fondo de los textos" → Sin fondo.' })]));
+    if (kind === 'btn' || kind === 'card' || kind === 'text') root.appendChild(group('Sombra', [shadow('Sombra', T, 'sh', true)], true));
     if (kind === 'line') root.appendChild(group('Línea', [fill('Color', T, 'bg', '@c2'), rowOf([num('Largo px', T, 'w', { min: 10, max: 2000 }), num('Grosor px', T, 'h', { min: 1, max: 60 })])]));
     if (kind === 'icon') root.appendChild(group('Ícono', [col('Color', T, 'col', '@c2'), num('Tamaño px', T, 'sz', { min: 12, max: 300 })]));
     root.appendChild(group('Posición y transformación', [h('div', { class: 'toolrow' }, [btn('↔ Centrar horizontal', function () { ED.centerPiece('x'); }, 'sm'), btn('↕ Centrar vertical', function () { ED.centerPiece('y'); }, 'sm'), btn('Reiniciar posición', function () { T.set({ dx: undefined, dy: undefined }, 'dx'); }, 'sm')]), rowOf([num('Mover X', T, 'dx', { def: 0, min: -1500, max: 1500 }), num('Mover Y', T, 'dy', { def: 0, min: -1500, max: 1500 })]), rowOf([num('Rotación °', T, 'r', { def: 0, min: -360, max: 360 }), num('Escala %', T, 'sc', { def: 1, scale: 100, min: 5, max: 500 })]), rng('Opacidad %', T, 'op', { min: 0, max: 100, def: 1, scale: 100 })]));
