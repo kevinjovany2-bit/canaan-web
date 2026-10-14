@@ -156,3 +156,4 @@
 .pg .prod.hl{outline:3px solid var(--c1);outline-offset:4px;border-radius:10px;transition:outline-color 1s}
 /* quitar el fondo de un texto en particular */
 .pg .cat-g[data-tb="1"] .det .tb.sin-tb{background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding-left:0;padding-right:0}
+.pg .tl-btn .tl-v{min-width:0;overflow-wrap:normal}
