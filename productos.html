@@ -40,6 +40,21 @@ textarea{min-height:70px}
 .tz label.ch{display:inline-flex;align-items:center;margin:0;font-weight:600;font-size:13px;border:1px solid #cfcfd4;border-radius:6px;padding:4px 8px;background:#fff;cursor:pointer;user-select:none}
 .tz label.ch input{display:none}
 .tz label.ch.on{background:#111;color:#fff;border-color:#111}
+.fx .imgs{gap:8px}
+.fx .mini{width:64px;height:80px}
+.fx .imgs .x{position:absolute;top:2px;right:2px;padding:1px 6px;font-size:12px}
+.fx .pr{position:absolute;bottom:2px;right:2px;padding:1px 6px;font-size:12px;background:#fff}
+.fx .mas{align-self:center;margin:0;font-size:13px;padding:8px 12px}
+.catl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.catc{display:inline-flex;align-items:center;gap:4px;background:#f7f7f8;border:1px solid #e3e3e6;border-radius:8px;padding:4px}
+.catc input{width:150px!important;margin:0!important;padding:6px!important}
+.catc .x{padding:6px 9px}
+.catn{display:flex;gap:8px;align-items:center;margin-top:10px}
+.catn input{max-width:260px;margin:0!important}
+.catn .add{margin:0;white-space:nowrap}
+.ideas{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ideas .idea{background:#fff;border:1px dashed #b9bbc2;padding:5px 10px;font-size:13px}
+.hint{font-size:13px;color:#666;margin:4px 0 0}
 .tz .otras{display:inline-block;width:220px;margin:4px 0;padding:6px;font-size:13px}
 </style>
 </head>
@@ -110,7 +125,10 @@ function render(){
   $("app").innerHTML =
   '<fieldset><legend>General</legend>' + T("Nombre de la tienda","nombre") + T("WhatsApp (504 + número, sin espacios)","whatsapp") + foto1("Logo (opcional; si no hay, se muestra el nombre)","logo") + '<p class="hint"><a href="admin.html#logo" target="_blank" style="font-weight:700">🎨 Editar tamaño, posición y rotación del logo (libre) ↗</a></p>' + L("Avisos de la barra negra","avisos") + '</fieldset>' +
   '<fieldset><legend>Portada y diseño</legend><p>La portada (textos, fotos de fondo, botón) y todo el diseño ahora se editan en el <a href="admin.html" target="_blank">Editor visual ↗</a>.</p></fieldset>' +
-  '<fieldset><legend>Categorías</legend>' + L("Categorías","categorias") + '</fieldset>' +
+  '<fieldset><legend>Categorías</legend><p class="hint">Escribe el nombre para cambiarlo (las prendas de esa categoría se actualizan solas).</p><div class="catl">' +
+    cats.map(function(c, i){ return '<span class="catc"><input data-cat="' + i + '" value="' + esc(c) + '"><button class="x" data-delcat="' + i + '" title="Quitar">✕</button></span>'; }).join("") +
+    '</div><div class="catn"><input id="nuevaCat" placeholder="Nueva categoría (ej. Faldas)"><button class="add" data-addcat="1">+ Agregar categoría</button></div>' +
+    '<div class="ideas"><small>Ideas (toca para agregar):</small> ' + IDEAS.filter(function(x){ return cats.indexOf(x) < 0; }).map(function(x){ return '<button class="idea" data-idea="' + esc(x) + '">+ ' + esc(x) + '</button>'; }).join("") + '</div></fieldset>' +
   '<fieldset><legend>Prendas</legend>' + T("Título de la sección","tituloProductos") +
   S.productos.map(function(p, i){
     var k = "productos." + i + ".";
@@ -118,7 +136,7 @@ function render(){
     T("Nombre", k + "nombre") +
     '<label>Categoría<select data-p="' + k + 'cat">' + cats.map(function(c){ return '<option' + (c === p.cat ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join("") + '</select></label>' +
     '<label>Precio L<input type="number" data-p="' + k + 'precio" value="' + p.precio + '"></label>' +
-    '<button class="x" data-delrow="productos.' + i + '">Borrar</button>' + tallasUI(p, i) + '</div>';
+    '<button class="x" data-delrow="productos.' + i + '">Borrar</button>' + tallasUI(p, i) + fotosUI(p, i) + '</div>';
   }).join("") + '<button class="add" data-addrow="producto">+ Agregar prenda</button></fieldset>' +
   '<fieldset><legend>Opinión de clienta</legend>' + A("Opinión","opinion") + T("Autora","opinionAutor") + '</fieldset>' +
   '<fieldset><legend>Galería de Instagram</legend>' + fotos("Fotos","galeria") + '</fieldset>' +
@@ -129,6 +147,15 @@ function render(){
   '<fieldset><legend>Contacto y redes</legend>' + T("Dirección","direccion") + T("Horario","horario") + T("Teléfono (texto visible)","telefono") +
   S.redes.map(function(r, i){ var k = "redes." + i + "."; return '<div class="fila fila3">' + T("Red", k + "nombre") + T("Enlace", k + "url") + '<button class="x" data-delrow="redes.' + i + '">Borrar</button></div>'; }).join("") +
   '<button class="add" data-addrow="red">+ Agregar red</button>' + T("Texto del pie de página","pie") + '</fieldset>';
+}
+
+/* ---- más fotos de la misma prenda (en la web se deslizan a la derecha o izquierda) ---- */
+var IDEAS = ["Faldas","Pantalones","Shorts","Conjuntos","Tops","Bodys","Chaquetas","Vestidos de gala","Trajes de baño","Lencería","Zapatos","Bolsos","Joyería","Ofertas"];
+function fotosUI(p, i){
+  var fs = Array.isArray(p.fotos) ? p.fotos : [], k = "productos." + i + ".fotos";
+  return '<div class="tz fx"><b>Más fotos de esta prenda</b> <small>(en la web se deslizan a la derecha o izquierda' + (fs.length ? ' · ' + (fs.length + 1) + ' fotos en total' : '') + ')</small><div class="imgs">' +
+    fs.map(function(n, j){ return '<div>' + thumb(n) + '<button class="x" data-del="' + k + '.' + j + '" title="Quitar">✕</button><button class="pr" data-principal="' + i + '.' + j + '" title="Usar como foto principal">★</button></div>'; }).join("") +
+    '<label class="up mas">+ Agregar fotos<input type="file" accept="image/*" multiple data-addimg="' + k + '" hidden></label></div></div>';
 }
 
 /* ---- tallas: la tienda marca las disponibles; la clienta elige en la web ---- */
@@ -164,11 +191,15 @@ document.addEventListener("change", function(e){
   if (d.talla != null) { var pr = S.productos[+d.talla], ts = tallasDe(pr).filter(function(t){ return t !== el.value; }); if (el.checked) ts.push(el.value); setTallas(pr, ts); el.parentNode.classList.toggle("on", el.checked); return; }
   if (d.lines) { setP(d.lines, el.value.split("\n").map(function(x){ return x.trim(); }).filter(Boolean)); render(); }
   else if (d.img && el.files[0]) { setP(d.img, nombreLibre(el.files[0])); render(); }
-  else if (d.addimg) { Array.prototype.forEach.call(el.files, function(f){ getP(d.addimg).push(nombreLibre(f)); }); render(); }
+  else if (d.addimg) { var arr = getP(d.addimg); if (!Array.isArray(arr)) { arr = []; setP(d.addimg, arr); } Array.prototype.forEach.call(el.files, function(f){ arr.push(nombreLibre(f)); }); render(); }
+  else if (d.cat != null) { var i = +d.cat, viejo = S.categorias[i], nuevo = el.value.trim(); if (!nuevo || nuevo === viejo) { render(); return; } S.categorias[i] = nuevo; S.productos.forEach(function(p){ if (p.cat === viejo) p.cat = nuevo; }); render(); }
 });
 document.addEventListener("click", function(e){
   var d = e.target.dataset;
   if (d.clear) { setP(d.clear, ""); render(); }
+  else if (d.principal) { var a = d.principal.split("."), pr = S.productos[+a[0]], j = +a[1], f = pr.fotos[j]; pr.fotos[j] = pr.foto; pr.foto = f; pr.fotos = pr.fotos.filter(Boolean); delete pr.mini; render(); }
+  else if (d.addcat || d.idea) { var n = (d.idea || $("nuevaCat").value).trim(); if (n && S.categorias.indexOf(n) < 0) S.categorias.push(n); render(); }
+  else if (d.delcat != null) { var c = S.categorias[+d.delcat], usan = S.productos.filter(function(p){ return p.cat === c; }).length; if (confirm('¿Quitar la categoría "' + c + '"?' + (usan ? "\n" + usan + " prenda(s) la usan: quedarán sin categoría hasta que les elijas otra." : ""))) { S.categorias.splice(+d.delcat, 1); render(); } }
   else if (d.del) { delP(d.del); render(); }
   else if (d.delrow) { if (confirm("¿Borrar?")) { delP(d.delrow); render(); } }
   else if (d.addrow === "producto") { S.productos.unshift({ id: nuevoId(), nombre: "Nueva prenda", cat: S.categorias[0] || "", precio: 0, tallas: "S M L", tallasDisp: ["S","M","L"], foto: "" }); render(); }

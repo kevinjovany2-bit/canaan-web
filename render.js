@@ -261,6 +261,9 @@
     return sl + (k ? '-' + (k + 1) : '');
   }
   function prodLink(p, talla) { var o = /^https?:/.test(location.origin) ? location.origin : ''; return o + '/p/' + encodeURIComponent(pid(p)) + (talla ? '?t=' + encodeURIComponent(talla) : ''); }
+  /* todas las fotos de la prenda: la principal + las extra (se deslizan en la tarjeta) */
+  function fotosDe(p) { return [p.foto].concat(Array.isArray(p.fotos) ? p.fotos : []).filter(function (f, i, a) { return f && a.indexOf(f) === i; }); }
+  PG.fotosDe = fotosDe;
   function precioL(v) { return 'L ' + Number(v || 0).toLocaleString('es-HN'); }
   function pedido(p, talla) {
     return '🛍️ *PEDIDO*\n\n*Detalles del producto:*\n\n• *' + p.nombre + '*\n' + (talla ? 'Talla: ' + talla + ' | ' : '') + 'Cantidad: 1\nPrecio: ' + precioL(p.precio) + '\n\n¿Está disponible?\n\n' + prodLink(p, talla);
@@ -268,13 +271,42 @@
   PG.TALLAS = TALLAS; PG.tallasDe = tallasDe; PG.pid = pid; PG.slug = slug;
   /* cuadrícula del catálogo: columnas × filas por dispositivo, forma de foto y espacio */
   var CGDEF = { d: { c: 4, f: 0 }, t: { c: 3, f: 0 }, m: { c: 2, f: 0 } };
-  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tm = g.tm || 'chico'; o.eq = g.eq == null ? '1' : String(g.eq); o.est = g.est || 'capas'; o.wab = g.wab == null ? (o.est === 'moderno' ? '0' : '1') : String(g.wab); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; return o; }
+  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tm = g.tm || 'chico'; o.eq = g.eq == null ? '1' : String(g.eq); o.est = g.est || 'capas'; o.wab = g.wab == null ? (o.est === 'moderno' ? '0' : '1') : String(g.wab); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; o.lay = g.lay === 'car' ? 'car' : 'grid'; o.peek = g.peek == null ? '1' : String(g.peek); o.arr = g.arr == null ? '1' : String(g.arr); return o; }
   function applyCat(b, s, dev) {
     var g = b.querySelector('.cat-g'); if (!g) return; var c = catCfg(s, dev), cols = Math.max(1, Math.min(8, c.c | 0));
     g.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))'; g.style.gap = c.gap + 'px'; g.style.maxWidth = c.w + '%';
     g.style.marginLeft = c.al === 'left' ? '0' : 'auto'; g.style.marginRight = c.al === 'right' ? '0' : 'auto';
     g.style.setProperty('--cat-ar', c.ar); g.style.setProperty('--cat-s', c.s / 100); g.dataset.cols = cols; g.dataset.card = c.card; g.dataset.tb = c.tb; g.dataset.tm = c.tm; g.dataset.est = c.est; g.dataset.wab = c.est === 'capas' ? (g.dataset.wab || '0') : c.wab; g.style.alignItems = c.eq === '0' ? 'start' : ''; g.style.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(c.tbc) + ' ' + c.tbo + '%, transparent)');
-    var lim = c.f > 0 ? cols * c.f : 1e9; Array.prototype.forEach.call(g.children, function (a, i) { a.style.display = i < lim ? '' : 'none'; });
+    var car = c.lay === 'car', lim = car ? 1e9 : (c.f > 0 ? cols * c.f : 1e9); Array.prototype.forEach.call(g.children, function (a, i) { a.style.display = i < lim ? '' : 'none'; });
+    /* carrusel: una sola fila que se desliza de derecha a izquierda */
+    g.dataset.lay = c.lay;
+    if (car) { g.style.gridTemplateColumns = ''; g.style.setProperty('--vis', cols + (c.peek === '0' ? 0 : (cols === 1 ? .15 : .3))); g.style.setProperty('--gapx', c.gap + 'px'); }
+    var w = g.parentNode;
+    if (car && !w.classList.contains('cat-w')) {
+      w = document.createElement('div'); w.className = 'cat-w'; g.parentNode.insertBefore(w, g); w.appendChild(g);
+      w.insertAdjacentHTML('beforeend', '<button type="button" class="cn-a cn-prev" aria-label="Anterior">\u2039</button><button type="button" class="cn-a cn-next" aria-label="Siguiente">\u203A</button>');
+    }
+    if (w.classList.contains('cat-w')) { w.dataset.arr = car && c.arr !== '0' ? '1' : '0'; bordes(g); }
+  }
+  /* flechas del carrusel: se ocultan al llegar al inicio o al final */
+  function bordes(g) {
+    var w = g.parentNode; if (!w || !w.classList || !w.classList.contains('cat-w')) return;
+    var fin = g.scrollWidth - g.clientWidth; w.classList.toggle('ini', g.scrollLeft <= 2); w.classList.toggle('fin', g.scrollLeft >= fin - 2);
+  }
+  if (!W.__pgCarr) {
+    W.__pgCarr = 1;
+    document.addEventListener('scroll', function (e) {
+      var t = e.target; if (!t || !t.classList) return;
+      if (t.classList.contains('fg')) { var i = Math.round(t.scrollLeft / (t.clientWidth || 1)); t.parentNode.querySelectorAll('.fg-dots i').forEach(function (x, j) { x.classList.toggle('on', j === i); }); }
+      else if (t.classList.contains('cat-g')) bordes(t);
+    }, true);
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('.fg-a, .cn-a'); if (!a) return;
+      e.preventDefault(); e.stopPropagation(); var d = /prev/.test(a.className) ? -1 : 1;
+      if (a.classList.contains('fg-a')) { var f = a.parentNode.querySelector('.fg'); if (f) f.scrollBy({ left: d * f.clientWidth, behavior: 'smooth' }); }
+      else { var g = a.parentNode.querySelector('.cat-g'); if (g) g.scrollBy({ left: d * g.clientWidth * .8, behavior: 'smooth' }); }
+    }, true);
+    W.addEventListener('resize', function () { document.querySelectorAll('.pg .cat-g[data-lay="car"]').forEach(bordes); });
   }
   PG.catCfg = catCfg;
   /* prendas que muestra cada catálogo: todas, una categoría o una selección propia */
@@ -361,7 +393,10 @@
     var h = capas.map(function (L, i) {
       var st = capaCss(L, i + 1), a = ' data-capa="' + esc(L.id) + '"';
       switch (L.t) {
-        case 'foto': return '<div class="ly ly-foto"' + a + ' style="' + st + '">' + (p.foto ? '<img src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy" style="object-fit:' + (L.fit || 'cover') + ';object-position:50% ' + (L.fy == null ? 20 : L.fy) + '%">' : '<span class="plata">' + esc((p.nombre || '?').charAt(0)) + '</span>') + '</div>';
+        case 'foto':
+          var fs = fotosDe(p), im = function (f, j) { return '<img src="' + esc(PG.asset('images/' + f)) + '" alt="' + esc(p.nombre) + '"' + (j ? ' loading="lazy"' : '') + ' draggable="false" style="object-fit:' + (L.fit || 'cover') + ';object-position:50% ' + (L.fy == null ? 20 : L.fy) + '%">'; };
+          if (fs.length > 1) return '<div class="ly ly-foto fotos"' + a + ' style="' + st + '"><div class="fg">' + fs.map(im).join('') + '</div><span class="fg-dots">' + fs.map(function (f, j) { return '<i' + (j ? '' : ' class="on"') + '></i>'; }).join('') + '</span><button type="button" class="fg-a fg-prev" aria-label="Foto anterior">\u2039</button><button type="button" class="fg-a fg-next" aria-label="Foto siguiente">\u203A</button></div>';
+          return '<div class="ly ly-foto"' + a + ' style="' + st + '">' + (fs.length ? im(fs[0], 0) : '<span class="plata">' + esc((p.nombre || '?').charAt(0)) + '</span>') + '</div>';
         case 'nombre': return '<h3 class="ly ly-nombre"' + a + ' style="' + st + '"><span class="lc" style="-webkit-line-clamp:' + (L.lines || 2) + '">' + esc(p.nombre) + '</span></h3>';
         case 'precio': return '<div class="ly ly-precio" data-fit="1"' + a + ' style="' + st + '"><span class="fitw">' + (L.lab ? '<i class="pl">' + esc(L.labt || 'Precio') + '</i>' : '') + precioL(p.precio) + '</span></div>';
         case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span>' + AVISO_TALLA + '</div><span class="tl-msg">Selecciona talla para ordenar</span></div>' : '';

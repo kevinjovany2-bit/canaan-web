@@ -138,10 +138,11 @@
     });
     ED.select([made]); return made;
   };
-  ED.addSection = function (t, after) {
+  ED.addSection = function (t, after, extra) {
     var id = PG.uid();
     ED.change(function (d) {
       var s = t === 'libre' ? { id: id, t: 'libre', n: 'Sección ' + (d.secs.length + 1), h: 500, bg: '@bg' } : { id: id, t: t, n: PG.BNAME[t] };
+      if (extra) Object.assign(s, JSON.parse(JSON.stringify(extra)));
       var i = d.secs.map(function (x) { return x.id; }).indexOf(after || ED.secSel || (ED.sel[0] && ED.el(ED.sel[0]) && ED.el(ED.sel[0]).sec));
       if (i < 0) i = d.secs.length - 1; d.secs.splice(i + 1, 0, s);
     });

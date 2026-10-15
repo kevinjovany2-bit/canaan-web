@@ -313,8 +313,41 @@
     root.appendChild(animSec(sid));
     root.appendChild(group('Fondo', [fill('Relleno', T, 'bg', 'none'), bgImgs(sid), rng('Velo sobre la foto %', T, 'velo', { def: .5, min: 0, max: 100, scale: 100 }), col('Color del velo', T, 'vc', '@bg'), seg('Ajuste foto', T, 'fit', [['cover', 'Cubrir'], ['contain', 'Contener']], { def: 'cover' })]));
   }
+  /* plantillas del contenedor de prendas (cuadrícula o carrusel que se desliza) */
+  var PLANTILLAS = [
+    { id: 'grid', n: 'Cuadrícula', d: 'Filas y columnas', cg: { lay: 'grid', d: { c: 4 }, t: { c: 3 }, m: { c: 2 } }, mini: [4, 4] },
+    { id: 'car', n: 'Carrusel', d: 'Desliza de lado', cg: { lay: 'car', peek: '1', arr: '1', d: { c: 4 }, t: { c: 3 }, m: { c: 2 } }, mini: [2.3] },
+    { id: 'car1', n: 'Carrusel grande', d: 'Una prenda a la vez', cg: { lay: 'car', peek: '1', arr: '1', d: { c: 3 }, t: { c: 2 }, m: { c: 1 } }, mini: [1.2] },
+    { id: 'carm', n: 'Carrusel mini', d: 'Muchas pequeñas', cg: { lay: 'car', peek: '1', arr: '1', d: { c: 6 }, t: { c: 4 }, m: { c: 3 } }, mini: [3.3] }
+  ];
+  function miniPl(pl) {
+    var car = pl.cg.lay === 'car', n = car ? pl.mini[0] : 4, k = [], i;
+    for (i = 0; i < (car ? Math.ceil(n) : 8); i++) k.push(h('i', { style: car ? 'flex:0 0 ' + (100 / n - 4) + '%' : '' }));
+    return h('span', { class: 'plm' + (car ? ' car' : '') }, k);
+  }
+  function plActual(sid) { var c = PG.catCfg(ED.sec(sid), 'm'); if (c.lay !== 'car') return 'grid'; return c.c === 1 ? 'car1' : c.c >= 3 ? 'carm' : 'car'; }
+  function plantillaGroup(sid) {
+    var cur = plActual(sid);
+    var cards = PLANTILLAS.map(function (pl) {
+      return h('button', { type: 'button', class: 'plc' + (pl.id === cur ? ' on' : ''), title: pl.d, onclick: function () {
+        var o = JSON.parse(JSON.stringify(ED.sec(sid).cg || {}));
+        ['d', 't', 'm'].forEach(function (dv) { o[dv] = Object.assign(o[dv] || {}, pl.cg[dv]); });
+        o.lay = pl.cg.lay; if (pl.cg.peek) o.peek = pl.cg.peek; if (pl.cg.arr) o.arr = pl.cg.arr;
+        ED.setSec(sid, { cg: o }, 'cgpl'); setTimeout(build, 0);
+      } }, [miniPl(pl), h('b', { text: pl.n }), h('small', { text: pl.d })]);
+    });
+    var G = { get: function (k) { return PG.catCfg(ED.sec(sid), ED.dev)[k]; }, set: function (p, ck) { var o = JSON.parse(JSON.stringify(ED.sec(sid).cg || {})); Object.assign(o, p); ED.setSec(sid, { cg: o }, 'cg' + ck); }, ov: function () { return false; }, reset: function () {} };
+    var kids = [h('div', { class: 'plg' }, cards)];
+    if (cur !== 'grid') kids.push(
+      seg('Asomar la siguiente prenda', G, 'peek', [['1', 'Sí'], ['0', 'No']], { def: '1' }),
+      seg('Flechas ‹ › (computadora)', G, 'arr', [['1', 'Mostrar'], ['0', 'Ocultar']], { def: '1' }),
+      h('div', { class: 'note', text: 'En el celular se desliza con el dedo. "Columnas" (abajo) = cuántas prendas se ven a la vez.' }));
+    root.appendChild(group('Plantilla del contenedor', kids));
+  }
+  PG.PLANTILLAS_CAT = PLANTILLAS;
   function catGroups(sid) {
     prendasGroup(sid);
+    plantillaGroup(sid);
     root.appendChild(h('div', { class: 'cvt' }, [btn('⧉ Aplicar este diseño a todos los catálogos', function () { aplicarATodos(sid); }, 'sm wide')]));
     function cg() { return JSON.parse(JSON.stringify(ED.sec(sid).cg || {})); }
     function put(fn, ck) { var o = cg(); fn(o); ED.setSec(sid, { cg: o }, ck); }
@@ -323,7 +356,7 @@
     var rows = [['d', '🖥 Computadora'], ['t', '▭ Tablet'], ['m', '▯ Celular']].map(function (x) {
       var T = devT(x[0]); return h('div', null, [h('div', { class: 'note', text: x[1] }), rowOf([num('Columnas', T, 'c', { min: 1, max: 8 }), num('Filas (0 = todas)', T, 'f', { min: 0, max: 30 })])]);
     });
-    root.appendChild(group('Cuadrícula de prendas', rows.concat([h('div', { class: 'note', text: 'Ej.: 4 columnas × 2 filas = muestra 8 prendas. Filas en 0 muestra todas. Cambia a Tablet o Móvil arriba para ver cómo queda.' })])));
+    root.appendChild(group('Columnas por dispositivo', rows.concat([h('div', { class: 'note', text: 'Cuadrícula: 4 columnas × 2 filas = muestra 8 prendas (filas en 0 muestra todas). Carrusel: columnas = prendas que se ven a la vez; las filas no se usan. Cambia a Tablet o Móvil arriba para ver cómo queda.' })])));
     root.appendChild(group('Cuadros de las prendas (todos juntos)', [
       seg('Cuadro', G, 'card', [['1', 'Con marco'], ['0', 'Sin marco']], { def: '1' }),
       seg('Altura', G, 'eq', [['1', 'Todos iguales'], ['0', 'Según contenido']], { def: '1' }),
@@ -424,6 +457,10 @@
     p.appendChild(h('label', { class: 'inl hint' }, [h('input', { type: 'checkbox', checked: '', onchange: function (e) { ED.asFree = e.target.checked; } }), ' Añadir como sección libre (todo editable)']));
     ED.asFree = true;
     p.appendChild(h('div', { class: 'blist' }, PG.BLOCKS.map(function (b) { return h('button', { class: 'bl', text: '+ ' + b.n, onclick: function () { var id = ED.addSection(b.t); if (ED.asFree && b.t !== 'catalogo') ED.convertSection(id); } }); })));
+    p.appendChild(h('div', { class: 'ptitle', text: 'Plantillas de catálogo' }));
+    p.appendChild(h('div', { class: 'plg' }, PLANTILLAS.map(function (pl) {
+      return h('button', { type: 'button', class: 'plc', title: 'Añadir catálogo: ' + pl.n, onclick: function () { ED.addSection('catalogo', null, { n: 'Catálogo ' + pl.n.toLowerCase(), cg: JSON.parse(JSON.stringify(pl.cg)) }); } }, [miniPl(pl), h('b', { text: '+ ' + pl.n }), h('small', { text: pl.d })]);
+    })));
     p.appendChild(h('div', { class: 'hint', text: 'Tip: también puedes arrastrar imágenes o fuentes desde tu computadora directamente al lienzo.' }));
   }
 
