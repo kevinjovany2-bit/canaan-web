@@ -195,7 +195,7 @@
 .pg .cat-g[data-est="moderno"] .tl-btn{width:auto;padding:2px 0;font-size:clamp(9px,5cqi,11px);font-weight:500;letter-spacing:.12em;background:none;border:0;box-shadow:none;color:#111;opacity:.7;white-space:nowrap}
 .pg .cat-g[data-est="moderno"] .tl-pop{left:0;right:auto;width:max-content;min-width:150px;max-width:220px}
 .pg .cat-g[data-wab="0"] .det .btn{display:none}
-.pg .cat-g[data-wab="0"] .prod{cursor:pointer}
+
 .pg .cat-g[data-est="moderno"] .tl-msg{font-size:11px}
 /* ===== Tarjeta por capas ===== */
 .pg .cat-g .prod.capas{position:relative;display:block;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;overflow:visible}
@@ -216,7 +216,7 @@
 .pg .prod.capas .tl-pop{top:calc(100% + 4px);left:0;right:auto;width:max-content;min-width:150px;max-width:230px;font-size:13px;letter-spacing:0;text-transform:none;font-weight:400}
 .pg .prod.capas .tl-msg{position:absolute;left:0;top:100%;white-space:nowrap;font-size:11px;letter-spacing:0;text-transform:none}
 .pg .prod.capas.need .tl-btn{color:#c0392b}
-.pg .cat-g[data-wab="0"] .prod.capas{cursor:pointer}
+
 .pg.edit .prod.capas{cursor:pointer}
 .pg.edit .prod.capas *{pointer-events:none}
 /* ===== Carrito ===== */

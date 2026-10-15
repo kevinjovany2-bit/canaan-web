@@ -263,8 +263,7 @@
   function prodLink(p, talla) { var o = /^https?:/.test(location.origin) ? location.origin : ''; return o + '/p/' + encodeURIComponent(pid(p)) + (talla ? '?t=' + encodeURIComponent(talla) : ''); }
   function precioL(v) { return 'L ' + Number(v || 0).toLocaleString('es-HN'); }
   function pedido(p, talla) {
-    return '🛍️ *PEDIDO*\n\n*Detalles del producto:*\n\n• *' + p.nombre + '*\n' + (talla ? 'Talla: ' + talla + ' | ' : '') + 'Cantidad: 1\nPrecio: ' + precioL(p.precio) +
-      '\n\n¿Está disponible?\n\n' + prodLink(p, talla);
+    return '🛍️ *PEDIDO*\n\n*Detalles del producto:*\n\n• *' + p.nombre + '*\n' + (talla ? 'Talla: ' + talla + ' | ' : '') + 'Cantidad: 1\nPrecio: ' + precioL(p.precio) + '\n\n¿Está disponible?';
   }
   PG.TALLAS = TALLAS; PG.tallasDe = tallasDe; PG.pid = pid; PG.slug = slug;
   /* cuadrícula del catálogo: columnas × filas por dispositivo, forma de foto y espacio */
@@ -309,13 +308,13 @@
      Cada capa se ubica en % de la tarjeta y el texto en "cqw" (1 = 1% del ancho de la tarjeta),
      así la tarjeta se ve idéntica en cualquier tamaño. */
   function CARRITO_DEF() { return { id: 'carrito', t: 'carrito', n: 'Botón carrito', x: 80, y: 3, w: 15, h: 8.1, bg: '#ffffff', rad: 7.5, sh: 'suave', col: '#111111', fs: 4, fw: 700, al: 'c', va: 'c', ff: '@fb' }; }
-  var TPL_DEF = { v: 2, ar: 1.85, capas: [
+  var TPL_DEF = { v: 3, ar: 2.05, capas: [
     { id: 'fondo', t: 'fondo', n: 'Fondo de la tarjeta', x: 0, y: 0, w: 100, h: 100, bg: '#ffffff', rad: 7, bw: 1, bc: '#ececec', sh: 'suave' },
-    { id: 'foto', t: 'foto', n: 'Foto', x: 2, y: 1.2, w: 96, h: 72, rad: 5.5, fy: 20 },
-    { id: 'nombre', t: 'nombre', n: 'Nombre', x: 7, y: 75.5, w: 86, h: 10, fs: 7, fw: 400, col: '#111111', lines: 2, ff: '@fb' },
-    { id: 'talla', t: 'talla', n: 'Talla', x: 7, y: 89.5, w: 40, h: 6.5, fs: 4.4, fw: 500, col: '#111111', ls: .12, up: 1, op: .75, va: 'c', ff: '@fb' },
-    { id: 'precio', t: 'precio', n: 'Precio', x: 40, y: 87.5, w: 53, h: 9.5, fs: 10, fw: 800, col: '#111111', al: 'r', va: 'c', lab: 1, labt: 'Precio', ff: '@fb' },
-    { id: 'pedir', t: 'pedir', n: 'Botón pedir', x: 7, y: 92, w: 86, h: 5.5, fs: 3.8, fw: 700, col: '#ffffff', bg: '#111111', rad: 2, al: 'c', va: 'c', tx: 'Pedir por WhatsApp', up: 1, ls: .08, hid: 1, ff: '@fb' },
+    { id: 'foto', t: 'foto', n: 'Foto', x: 2, y: 1.1, w: 96, h: 65, rad: 5.5, fy: 20 },
+    { id: 'nombre', t: 'nombre', n: 'Nombre', x: 7, y: 68.2, w: 86, h: 9, fs: 7, fw: 400, col: '#111111', lines: 2, ff: '@fb' },
+    { id: 'talla', t: 'talla', n: 'Talla', x: 7, y: 80.6, w: 40, h: 5.9, fs: 4.4, fw: 500, col: '#111111', ls: .12, up: 1, op: .75, va: 'c', ff: '@fb' },
+    { id: 'precio', t: 'precio', n: 'Precio', x: 40, y: 78.9, w: 53, h: 8.6, fs: 10, fw: 800, col: '#111111', al: 'r', va: 'c', lab: 1, labt: 'Precio', ff: '@fb' },
+    { id: 'pedir', t: 'pedir', n: 'Botón pedir', x: 5, y: 89.5, w: 90, h: 7.6, fs: 4.2, fw: 700, col: '#ffffff', bg: '#111111', rad: 2.5, al: 'c', va: 'c', tx: 'Pedir por WhatsApp', up: 1, ls: .06, ff: '@fb' },
     CARRITO_DEF()
   ] };
   /* diseño inicial anterior (foto más baja): si nadie lo modificó, se usa el nuevo */
@@ -326,6 +325,16 @@
   function tplOk(t) {
     if (!t || !Array.isArray(t.capas) || !t.capas.length) return TPL_DEF; if (!t.v && t.ar === 1.48 && JSON.stringify(t.capas).indexOf(TPL_V1) === 0) return TPL_DEF;
     if (!t.capas.some(function (c) { return c.t === 'carrito'; })) { t = JSON.parse(JSON.stringify(t)); t.capas.push(CARRITO_DEF()); }
+    /* v3: el botón "Pedir por WhatsApp" vuelve a ser visible (tocar la foto ya no abre WhatsApp).
+       Si estaba oculto, se agranda la tarjeta hacia abajo y el botón se pone debajo, sin mover lo demás. */
+    var pd = t.capas.filter(function (c) { return c.t === 'pedir'; })[0];
+    if ((t.v || 0) < 3 && (!pd || pd.hid)) {
+      t = JSON.parse(JSON.stringify(t)); var k = 1.11, ar = t.ar || 1.48; t.ar = Math.round(ar * k * 100) / 100; t.v = 3;
+      t.capas.forEach(function (c) { if (c.t === 'fondo') return; c.y = Math.round(c.y / k * 10) / 10; c.h = Math.round(c.h / k * 10) / 10; });
+      pd = t.capas.filter(function (c) { return c.t === 'pedir'; })[0];
+      if (!pd) { pd = JSON.parse(JSON.stringify(TPL_DEF.capas.filter(function (c) { return c.t === 'pedir'; })[0])); t.capas.splice(t.capas.length - 1, 0, pd); }
+      delete pd.hid; pd.x = 5; pd.w = 90; pd.y = Math.round((100 / k + 0.8) * 10) / 10; pd.h = Math.round((100 - pd.y - 2.2) * 10) / 10;
+    }
     return t;
   }
   function tplDe(ctx) { return tplOk(ctx && ctx.doc && ctx.doc.tarjeta); }
@@ -347,14 +356,14 @@
   function tarjetaHTML(p, tpl, o) {
     o = o || {}; var ts = tallasDe(p), capas = tpl.capas, talla = capas.filter(function (c) { return c.t === 'talla'; })[0];
     if (!talla || talla.hid) ts = [];
-    var uno = ts.length === 1 ? ts[0] : '';
+    var uno = '';
     var h = capas.map(function (L, i) {
       var st = capaCss(L, i + 1), a = ' data-capa="' + esc(L.id) + '"';
       switch (L.t) {
         case 'foto': return '<div class="ly ly-foto"' + a + ' style="' + st + '">' + (p.foto ? '<img src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy" style="object-fit:' + (L.fit || 'cover') + ';object-position:50% ' + (L.fy == null ? 20 : L.fy) + '%">' : '<span class="plata">' + esc((p.nombre || '?').charAt(0)) + '</span>') + '</div>';
         case 'nombre': return '<h3 class="ly ly-nombre"' + a + ' style="' + st + '"><span class="lc" style="-webkit-line-clamp:' + (L.lines || 2) + '">' + esc(p.nombre) + '</span></h3>';
         case 'precio': return '<div class="ly ly-precio" data-fit="1"' + a + ' style="' + st + '"><span class="fitw">' + (L.lab ? '<i class="pl">' + esc(L.labt || 'Precio') + '</i>' : '') + precioL(p.precio) + '</span></div>';
-        case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span></div><span class="tl-msg">Elige tu talla 👆</span></div>' : '';
+        case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span></div><span class="tl-msg">Selecciona talla para ordenar</span></div>' : '';
         case 'pedir': return '<a class="ly ly-pedir btn-pedir" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Pedir por WhatsApp') + '</span></a>';
         case 'carrito': return '<button type="button" class="ly ly-carrito" title="Agregar al carrito"' + a + ' style="' + st + '">' + BOLSA + (L.tx ? '<span class="ctx">' + esc(L.tx) + '</span>' : '') + '</button>';
         case 'texto': return '<div class="ly ly-texto"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Texto') + '</span></div>';
@@ -509,6 +518,11 @@
     }
     return ctx;
   }
+  function aviso(t) {
+    var e = document.querySelector('.cc-toast'); if (!e) { e = document.createElement('div'); e.className = 'cc-toast'; document.body.appendChild(e); }
+    e.textContent = t; e.classList.add('on'); clearTimeout(aviso.t); aviso.t = setTimeout(function () { e.classList.remove('on'); }, 2200);
+  }
+  PG.aviso = aviso;
   /* ================= CARRITO =================
      Se guarda en el navegador de la clienta. "Enviar pedido" arma un solo
      mensaje de WhatsApp con todas las prendas, tallas, cantidades y el total. */
@@ -523,9 +537,8 @@
     function agregar(art) {
       var id = art.dataset.pid, t = art.dataset.talla || '', it = items.filter(function (x) { return x.id === id && x.t === t; })[0];
       if (it) it.q++; else items.push({ id: id, t: t, q: 1 });
-      guardar(); aviso('✓ Agregado al carrito'); var b = ui && ui.btn; if (b) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+      guardar(); aviso('✓ Agregado al carrito' + (t ? ' · Talla ' + t : '')); limpiarTalla(art); var b = ui && ui.btn; if (b) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
     }
-    function aviso(t) { if (!ui) return; ui.toast.textContent = t; ui.toast.classList.add('on'); clearTimeout(ui.tt); ui.tt = setTimeout(function () { ui.toast.classList.remove('on'); }, 1800); }
     function mensaje() {
       var L = vivos().map(function (it) {
         var p = prod(it.id), u = Number(p.precio) || 0;
@@ -538,7 +551,7 @@
     function init() {
       if (ui) return; ui = {};
       ui.btn = el('button', 'cc-btn', BOLSA + '<b class="cc-n">0</b>'); ui.btn.type = 'button'; ui.btn.title = 'Ver carrito'; ui.btn.onclick = abrir;
-      ui.toast = el('div', 'cc-toast');
+      ui.toast = document.querySelector('.cc-toast') || el('div', 'cc-toast');
       ui.fondo = el('div', 'cc-fondo'); ui.fondo.onclick = cerrar;
       ui.panel = el('aside', 'cc-panel', '<div class="cc-h"><b>Tu carrito</b><button type="button" class="cc-x" aria-label="Cerrar">✕</button></div><div class="cc-list"></div><div class="cc-pie"><div class="cc-tot"><span>Total</span><b></b></div><a class="cc-enviar" target="_blank" rel="noopener">Enviar pedido por WhatsApp</a><button type="button" class="cc-vaciar">Vaciar carrito</button></div>');
       ui.panel.querySelector('.cc-x').onclick = cerrar;
@@ -580,6 +593,12 @@
     var a = art.querySelector('.btn-pedir'); if (a) a.href = waUrl(pedido(p, t));
   }
   PG.elegirTalla = elegirTalla;
+  function limpiarTalla(art) {
+    if (!art.querySelector('.tl')) return; delete art.dataset.talla; art.querySelectorAll('.tl').forEach(function (x) { x.classList.remove('on'); });
+    var v = art.querySelector('.tl-v'), p = prodDe(art), L = art.querySelector('.ly-talla'); if (v) v.textContent = 'Talla';
+    var a = art.querySelector('.btn-pedir'); if (a && p) a.href = waUrl(pedido(p, ''));
+  }
+  function pedirTalla(art, ir) { cerrarTallas(art); art.dataset.ir = ir; art.classList.remove('need'); void art.offsetWidth; art.classList.add('open', 'need'); aviso('Selecciona talla para ordenar'); }
   function pedidoClick(e) {
     var tl = e.target.closest('.prod .tl'); if (tl) {
       e.preventDefault(); var ap = tl.closest('.prod'); elegirTalla(ap, tl.dataset.t);
@@ -589,20 +608,17 @@
     }
     var cb = e.target.closest('.prod .ly-carrito'); if (cb) {
       e.preventDefault(); var ac2 = cb.closest('.prod');
-      if (ac2.querySelector('.tl') && !ac2.dataset.talla) { cerrarTallas(ac2); ac2.dataset.ir = 'cart'; ac2.classList.add('open'); }
-      else CART.agregar(ac2);
+      if (ac2.querySelector('.tl') && !ac2.dataset.talla) pedirTalla(ac2, 'cart'); else CART.agregar(ac2);
       return true;
     }
     var tb = e.target.closest('.prod .tl-btn'); if (tb) { e.preventDefault(); var ar = tb.closest('.prod'); cerrarTallas(ar); ar.classList.toggle('open'); return true; }
     if (!e.target.closest('.tl-pop')) cerrarTallas();
-    var bt = e.target.closest('.prod .btn-pedir');
-    if (!bt) { var ac = e.target.closest('.cat-g[data-wab="0"] .prod'); if (!ac || e.target.closest('.tallas')) return false; bt = ac.querySelector('.btn-pedir'); if (!bt) return false;
-      if (!(ac.querySelector('.tl') && !ac.dataset.talla)) { e.preventDefault(); W.open(bt.href, '_blank', 'noopener'); return true; } }
+    var bt = e.target.closest('.prod .btn-pedir'); if (!bt) return false;
     var art = bt.closest('.prod'), g = art.closest('.cat-g');
     if (art.querySelector('.tl') && !art.dataset.talla) {
-      e.preventDefault(); cerrarTallas(art);
-      if (g && (g.dataset.tm === 'pedir' || g.dataset.wab === '0')) { art.dataset.ir = '1'; art.classList.add('open'); }   /* elige talla y se abre WhatsApp */
-      else { art.classList.remove('need'); void art.offsetWidth; art.classList.add('need', 'open'); }
+      e.preventDefault();
+      if (art.classList.contains('capas') || (g && g.dataset.tm === 'pedir')) pedirTalla(art, '1');   /* elige talla y se abre WhatsApp */
+      else { cerrarTallas(art); art.classList.remove('need'); void art.offsetWidth; art.classList.add('need', 'open'); }
     }
     return true;
   }

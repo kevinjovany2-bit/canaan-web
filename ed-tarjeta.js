@@ -172,7 +172,7 @@
       ar.oninput = function () { T.ar = +ar.value / 100; lb.textContent = T.ar.toFixed(2); live(); }; ar.onchange = function () { commit('tjar'); };
       r.appendChild(grp('Tarjeta', [h('label', { class: 'tj-f wide' }, ['Alto de la tarjeta (alto ÷ ancho): ', lb, ar]),
         h('div', { class: 'tj-tip', text: 'El ancho lo decide la cuadrícula del catálogo (columnas por dispositivo). Todo lo de adentro se ubica en % de la tarjeta, por eso se ve igual en cualquier pantalla.' })]));
-      r.appendChild(grp('Cómo se pide', [h('div', { class: 'tj-tip', text: 'Si la capa "Botón pedir" está oculta, la clienta toca la tarjeta → elige talla → se abre WhatsApp. Si la muestras, pide con el botón.' })]));
+      r.appendChild(grp('Cómo se pide', [h('div', { class: 'tj-tip', text: 'La clienta pide con el botón "Pedir por WhatsApp" o con la bolsita del carrito. En los dos casos tiene que elegir talla primero. Tocar la foto no hace nada.' })]));
       return;
     }
     var L = capa(sel), id = sel;
