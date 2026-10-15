@@ -321,6 +321,7 @@
   var TPL_V1 = '[{"id":"fondo","t":"fondo","n":"Fondo de la tarjeta","x":0,"y":0,"w":100,"h":100,"bg":"#ffffff","rad":7,"bw":1,"bc":"#ececec","sh":"suave"},{"id":"foto","t":"foto","n":"Foto","x":2,"y":1.4,"w":96,"h":63,"rad":5.5}';
   PG.TPL_DEF = TPL_DEF;
   var BOLSA = '<svg class="bolsa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/><path d="M12 12v4M10 14h4"/></svg>';
+  var AVISO_TALLA = '<span class="tl-aviso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>Selecciona tu talla para ordenar</span>';
   var SOMBRAS = { suave: '0 3cqw 7cqw rgba(0,0,0,.10)', media: '0 3cqw 9cqw rgba(0,0,0,.18)', fuerte: '0 4cqw 12cqw rgba(0,0,0,.30)' };
   function tplOk(t) {
     if (!t || !Array.isArray(t.capas) || !t.capas.length) return TPL_DEF; if (!t.v && t.ar === 1.48 && JSON.stringify(t.capas).indexOf(TPL_V1) === 0) return TPL_DEF;
@@ -363,7 +364,7 @@
         case 'foto': return '<div class="ly ly-foto"' + a + ' style="' + st + '">' + (p.foto ? '<img src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy" style="object-fit:' + (L.fit || 'cover') + ';object-position:50% ' + (L.fy == null ? 20 : L.fy) + '%">' : '<span class="plata">' + esc((p.nombre || '?').charAt(0)) + '</span>') + '</div>';
         case 'nombre': return '<h3 class="ly ly-nombre"' + a + ' style="' + st + '"><span class="lc" style="-webkit-line-clamp:' + (L.lines || 2) + '">' + esc(p.nombre) + '</span></h3>';
         case 'precio': return '<div class="ly ly-precio" data-fit="1"' + a + ' style="' + st + '"><span class="fitw">' + (L.lab ? '<i class="pl">' + esc(L.labt || 'Precio') + '</i>' : '') + precioL(p.precio) + '</span></div>';
-        case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span></div><span class="tl-msg">Selecciona talla para ordenar</span></div>' : '';
+        case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span>' + AVISO_TALLA + '</div><span class="tl-msg">Selecciona talla para ordenar</span></div>' : '';
         case 'pedir': return '<a class="ly ly-pedir btn-pedir" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Pedir por WhatsApp') + '</span></a>';
         case 'carrito': return '<button type="button" class="ly ly-carrito" title="Agregar al carrito"' + a + ' style="' + st + '">' + BOLSA + (L.tx ? '<span class="ctx">' + esc(L.tx) + '</span>' : '') + '</button>';
         case 'texto': return '<div class="ly ly-texto"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Texto') + '</span></div>';
@@ -585,7 +586,10 @@
 
   /* elegir talla y pedir */
   function prodDe(art) { var id = art && art.dataset.pid; return ((W.SITIO || {}).productos || []).filter(function (p) { return pid(p) === id; })[0]; }
-  function cerrarTallas(salvo) { document.querySelectorAll('.pg .prod.open').forEach(function (x) { if (x !== salvo) x.classList.remove('open'); }); }
+  function cerrarTallas(salvo) {
+    document.querySelectorAll('.pg .prod.open, .pg .prod.need').forEach(function (x) { if (x !== salvo) x.classList.remove('open', 'need'); });
+    document.querySelectorAll('.pg .tl-pop-cart').forEach(function (x) { if (!salvo || !salvo.contains(x)) x.remove(); });
+  }
   function elegirTalla(art, t) {
     var p = prodDe(art); if (!p) return; art.dataset.talla = t; art.classList.remove('need', 'open');
     art.querySelectorAll('.tl').forEach(function (x) { x.classList.toggle('on', x.dataset.t === t); });
@@ -598,11 +602,31 @@
     var v = art.querySelector('.tl-v'), p = prodDe(art), L = art.querySelector('.ly-talla'); if (v) v.textContent = 'Talla';
     var a = art.querySelector('.btn-pedir'); if (a && p) a.href = waUrl(pedido(p, ''));
   }
-  function pedirTalla(art, ir) { cerrarTallas(art); art.dataset.ir = ir; art.classList.remove('need'); void art.offsetWidth; art.classList.add('open', 'need'); aviso('Selecciona talla para ordenar'); }
+  /* mantiene el cuadro de tallas dentro de la tarjeta (no se sale por los lados) */
+  function encajar(pop, art) {
+    if (!pop || !art) return;
+    pop.style.marginLeft = ''; pop.style.minWidth = '0'; pop.style.maxWidth = Math.max(140, art.clientWidth - 8) + 'px';
+    var a = art.getBoundingClientRect(), q = pop.getBoundingClientRect(), k = q.width ? pop.offsetWidth / q.width : 1, dx = 0;
+    if (q.right > a.right - 4) dx = a.right - 4 - q.right;
+    if (q.left + dx < a.left + 4) dx = a.left + 4 - q.left;
+    if (dx) { if (pop.classList.contains('tl-pop-cart')) { pop.style.left = (pop.offsetLeft + dx * k) + 'px'; pop.style.right = 'auto'; } else pop.style.marginLeft = (dx * k) + 'px'; }
+  }
+  function pedirTalla(art, ir) {
+    cerrarTallas(); art.dataset.ir = ir;
+    var c = ir === 'cart' && art.querySelector('.ly-carrito'), g = art.querySelector('.tl-g');
+    if (c && g) {   /* las tallas salen junto a la bolsita del carrito */
+      var pop = document.createElement('div'); pop.className = 'tl-pop tl-pop-cart';
+      pop.innerHTML = '<span class="tl-l">Elige tu talla</span><span class="tl-g">' + g.innerHTML + '</span>' + AVISO_TALLA;
+      pop.style.top = (c.offsetTop + c.offsetHeight + 6) + 'px'; pop.style.right = Math.max(4, art.clientWidth - c.offsetLeft - c.offsetWidth) + 'px';
+      art.appendChild(pop); encajar(pop, art); return;
+    }
+    art.classList.remove('need'); void art.offsetWidth; art.classList.add('open', 'need');
+    if (art.classList.contains('capas')) encajar(art.querySelector('.ly-talla .tl-pop'), art);
+  }
   function pedidoClick(e) {
     var tl = e.target.closest('.prod .tl'); if (tl) {
       e.preventDefault(); var ap = tl.closest('.prod'); elegirTalla(ap, tl.dataset.t);
-      if (ap.dataset.ir === 'cart') { delete ap.dataset.ir; CART.agregar(ap); }
+      if (ap.dataset.ir === 'cart') { delete ap.dataset.ir; cerrarTallas(); CART.agregar(ap); }
       else if (ap.dataset.ir) { delete ap.dataset.ir; var wa = ap.querySelector('.btn-pedir'); if (wa) W.open(wa.href, '_blank', 'noopener'); }
       return true;
     }
@@ -611,7 +635,7 @@
       if (ac2.querySelector('.tl') && !ac2.dataset.talla) pedirTalla(ac2, 'cart'); else CART.agregar(ac2);
       return true;
     }
-    var tb = e.target.closest('.prod .tl-btn'); if (tb) { e.preventDefault(); var ar = tb.closest('.prod'); cerrarTallas(ar); ar.classList.toggle('open'); return true; }
+    var tb = e.target.closest('.prod .tl-btn'); if (tb) { e.preventDefault(); var ar = tb.closest('.prod'); cerrarTallas(ar); ar.classList.toggle('open'); if (ar.classList.contains('capas') && ar.classList.contains('open')) encajar(ar.querySelector('.ly-talla .tl-pop'), ar); return true; }
     if (!e.target.closest('.tl-pop')) cerrarTallas();
     var bt = e.target.closest('.prod .btn-pedir'); if (!bt) return false;
     var art = bt.closest('.prod'), g = art.closest('.cat-g');

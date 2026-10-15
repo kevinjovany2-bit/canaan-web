@@ -250,3 +250,19 @@
 .cc-enviar{display:block;text-align:center;background:#25d366;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:12px}
 .cc-enviar.off{opacity:.4;pointer-events:none}
 .cc-vaciar{border:0;background:none;color:#999;cursor:pointer;font-size:13px}
+/* el cuadro de tallas siempre queda encima del botón de WhatsApp */
+.pg .prod.capas.open .ly-talla{z-index:60!important}
+.pg .prod.capas .tl-pop-cart{display:block;position:absolute;left:auto;z-index:70;width:max-content;min-width:150px;max-width:220px;font-size:13px;animation:pg-pop .16s ease-out}
+/* en la tarjeta por capas el cuadro de tallas abre hacia arriba (sobre la foto) y el aviso sale como mensaje flotante */
+.pg .prod.capas .ly-talla .tl-pop{top:auto;bottom:calc(100% + 6px)}
+.pg .prod.capas .tl-msg{display:none!important}
+/* aviso "Selecciona tu talla para ordenar" dentro del cuadro, debajo de las tallas */
+.pg .tl-aviso{display:none;align-items:center;gap:8px;margin-top:10px;padding:9px 11px;border-radius:10px;background:linear-gradient(135deg,#fff8e8,#fdf0d5);border:1px solid #efd9a6;color:#7a5a12;font:600 12px/1.25 system-ui,-apple-system,sans-serif;letter-spacing:0;text-transform:none;font-style:normal;white-space:normal;animation:tl-av .35s ease-out}
+.pg .tl-aviso svg{width:16px;height:16px;flex:none;color:#c9971c}
+.pg .prod.need .tl-pop .tl-aviso,.pg .tl-pop-cart .tl-aviso{display:flex}
+@keyframes tl-av{from{opacity:0;transform:translateY(-4px)}}
+.pg .prod.capas.open .ly-talla{opacity:1!important}
+/* aviso más compacto */
+.pg .tl-aviso{gap:6px;margin-top:8px;padding:6px 8px;border-radius:8px;font:600 10.5px/1.2 system-ui,-apple-system,sans-serif}
+.pg .tl-aviso svg{width:13px;height:13px}
+.pg .tl-aviso{background:#fff;border:1px solid #e6cf98;box-shadow:0 2px 8px rgba(0,0,0,.06)}
