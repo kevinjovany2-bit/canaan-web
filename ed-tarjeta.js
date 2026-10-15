@@ -7,8 +7,8 @@
 (function (W) {
   'use strict';
   var box = null, sel = null, prodIdx = 0, CW = 320;
-  var TXT = { nombre: 1, precio: 1, talla: 1, pedir: 1, texto: 1 };
-  var ICO = { fondo: '▭', foto: '🖼', nombre: 'T', precio: '$', talla: '▾', pedir: '💬', texto: 'T', caja: '■' };
+  var TXT = { nombre: 1, precio: 1, talla: 1, pedir: 1, texto: 1, carrito: 1 };
+  var ICO = { fondo: '▭', foto: '🖼', nombre: 'T', precio: '$', talla: '▾', pedir: '💬', texto: 'T', caja: '■', carrito: '🛍' };
   function $(q, r) { return (r || box).querySelector(q); }
   function h(tag, at, kids) {
     var e = document.createElement(tag); at = at || {};
@@ -191,6 +191,7 @@
       if (L.t === 'nombre') g.push(num('Líneas máximas', id, 'lines', { step: 1, min: 1, max: 6, def: 2 }));
       if (L.t === 'precio') { g.push(chk('Mostrar la palabra antes del precio', id, 'lab')); g.push(txt('Palabra', id, 'labt', 'Precio')); g.push(h('div', { class: 'tj-tip', text: 'Si el precio no cabe (ej. L 12,500), la letra se achica sola.' })); }
       if (L.t === 'talla') g.push(txt('Texto', id, 'tx', 'Talla'));
+      if (L.t === 'carrito') { g.push(txt('Texto junto a la bolsita (opcional)', id, 'tx', '')); g.push(h('div', { class: 'tj-tip', text: 'Al tocarla se agrega la prenda al carrito (pide talla si hace falta). Para quitar el carrito de la web, oculta esta capa con 👁.' })); }
       if (L.t === 'pedir' || L.t === 'texto') g.push(txt('Texto', id, 'tx', L.t === 'pedir' ? 'Pedir por WhatsApp' : 'Texto'));
       r.appendChild(grp('Texto', g));
     }
