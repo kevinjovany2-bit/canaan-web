@@ -269,7 +269,7 @@
   PG.TALLAS = TALLAS; PG.tallasDe = tallasDe; PG.pid = pid; PG.slug = slug;
   /* cuadrícula del catálogo: columnas × filas por dispositivo, forma de foto y espacio */
   var CGDEF = { d: { c: 4, f: 0 }, t: { c: 3, f: 0 }, m: { c: 2, f: 0 } };
-  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tm = g.tm || 'chico'; o.eq = g.eq == null ? '1' : String(g.eq); o.est = g.est || 'clasico'; o.wab = g.wab == null ? (o.est === 'moderno' ? '0' : '1') : String(g.wab); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; return o; }
+  function catCfg(s, dev) { var g = s.cg || {}, o = Object.assign({}, CGDEF[dev] || CGDEF.d, g[dev] || {}); o.ar = g.ar || '4/5'; o.gap = g.gap == null ? (dev === 'm' ? 12 : 24) : g.gap; o.w = g.w || 100; o.al = g.al || 'center'; o.card = g.card == null ? '1' : String(g.card); o.s = g.s || 100; o.tb = g.tb == null ? '1' : String(g.tb); o.tm = g.tm || 'chico'; o.eq = g.eq == null ? '1' : String(g.eq); o.est = g.est || 'capas'; o.wab = g.wab == null ? (o.est === 'moderno' ? '0' : '1') : String(g.wab); o.tbc = g.tbc || '#9aa0a8'; o.tbo = g.tbo == null ? 22 : g.tbo; return o; }
   function applyCat(b, s, dev) {
     var g = b.querySelector('.cat-g'); if (!g) return; var c = catCfg(s, dev), cols = Math.max(1, Math.min(8, c.c | 0));
     g.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))'; g.style.gap = c.gap + 'px'; g.style.maxWidth = c.w + '%';
@@ -607,7 +607,7 @@
     return true;
   }
   function catalogoConCarrito(doc) {
-    var cap = doc.secs.some(function (s) { return s.t === 'catalogo' && (s.cg || {}).est === 'capas'; }); if (!cap) return false;
+    var cap = doc.secs.some(function (s) { return s.t === 'catalogo' && ((s.cg || {}).est || 'capas') === 'capas'; }); if (!cap) return false;
     var c = tplOk(doc.tarjeta).capas.filter(function (x) { return x.t === 'carrito'; })[0]; return !!c && !c.hid;
   }
   PG.render = render; PG.paintEl = paintEl; PG.buildEl = buildEl; PG.res = res; PG.secRes = secRes; PG.adapted = adapted;
