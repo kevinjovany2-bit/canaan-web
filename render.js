@@ -273,7 +273,7 @@
     var g = b.querySelector('.cat-g'); if (!g) return; var c = catCfg(s, dev), cols = Math.max(1, Math.min(8, c.c | 0));
     g.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))'; g.style.gap = c.gap + 'px'; g.style.maxWidth = c.w + '%';
     g.style.marginLeft = c.al === 'left' ? '0' : 'auto'; g.style.marginRight = c.al === 'right' ? '0' : 'auto';
-    g.style.setProperty('--cat-ar', c.ar); g.style.setProperty('--cat-s', c.s / 100); g.dataset.cols = cols; g.dataset.card = c.card; g.dataset.tb = c.tb; g.dataset.tm = c.tm; g.dataset.est = c.est; g.dataset.wab = c.wab; g.style.alignItems = c.eq === '0' ? 'start' : ''; g.style.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(c.tbc) + ' ' + c.tbo + '%, transparent)');
+    g.style.setProperty('--cat-ar', c.ar); g.style.setProperty('--cat-s', c.s / 100); g.dataset.cols = cols; g.dataset.card = c.card; g.dataset.tb = c.tb; g.dataset.tm = c.tm; g.dataset.est = c.est; g.dataset.wab = c.est === 'capas' ? (g.dataset.wab || '0') : c.wab; g.style.alignItems = c.eq === '0' ? 'start' : ''; g.style.setProperty('--cat-tb', 'color-mix(in srgb, ' + tok(c.tbc) + ' ' + c.tbo + '%, transparent)');
     var lim = c.f > 0 ? cols * c.f : 1e9; Array.prototype.forEach.call(g.children, function (a, i) { a.style.display = i < lim ? '' : 'none'; });
   }
   PG.catCfg = catCfg;
@@ -289,14 +289,81 @@
     var S = W.SITIO || {}, L = precioL, libre = !s || !s.pm || s.pm === 'todas';
     var t = b.querySelector('.cat-t'), tx = libre && filtro !== 'Todo' ? filtro : (s && s.pm === 'cat' && s.pc ? s.pc : (S.tituloProductos || 'Novedades')); t.dataset.o = tx; t.textContent = tx;
     var lista = prendasDe(s), chico = !!(s && ctx && catCfg(s, ctx.dev).tm === 'chico');
+    var capas = s && ctx && catCfg(s, ctx.dev).est === 'capas', tpl = capas && tplDe(ctx);
+    if (capas) {
+      var g0 = b.querySelector('.cat-g'); g0.innerHTML = lista.length ? lista.map(function (p) { return tarjetaHTML(p, tpl); }).join('') : (ctx.edit ? '<p class="cat-vacio">Este catálogo no tiene prendas.</p>' : '');
+      applyCat(b, s, ctx.dev); var pd = tpl.capas.filter(function (c) { return c.t === 'pedir'; })[0]; g0.dataset.wab = pd && !pd.hid ? '1' : '0';
+      requestAnimationFrame(function () { ajustarTextos(g0); }); return;
+    }
     b.querySelector('.cat-g').innerHTML = lista.length ? lista.map(function (p) {
       var f = p.foto ? '<img data-p="images/' + esc(p.foto) + '" src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy">' : '<span class="plata">' + esc(p.nombre.charAt(0)) + '</span>';
       var ts = tallasDe(p), uno = ts.length === 1 ? ts[0] : '';
       var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"' + K('tbt', 'Botón de tallas', 'btn') + '><span class="tl-v"' + K('tbl', 'Texto de tallas', 'text', !uno) + '>' + (uno ? 'Talla: ' + esc(uno) : (chico ? 'Talla' : 'Elegir talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l"' + K('tpl', 'Título del cuadro de tallas', 'text', 1) + '>Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '"' + K('tc', 'Opciones de talla', 'btn') + '>' + esc(t) + '</button>'; }).join('') + '</span></div></div>' : '';
-      return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + K('pcard', 'Cuadro de la prenda', 'card') + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '><i class="pl">Precio</i>' + L(p.precio) + '</span>' + tz + '<a class="btn" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
+      return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + K('pcard', 'Cuadro de la prenda', 'card') + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '><i class="pl">Precio</i>' + L(p.precio) + '</span>' + tz + '<a class="btn btn-pedir" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
     }).join('') : (ctx && ctx.edit ? '<p class="cat-vacio">Este catálogo no tiene prendas. Elígelas en el panel derecho → "Prendas de este catálogo".</p>' : '');
     if (ctx && s) { paintKs(ctx, b, s); applyCat(b, s, ctx.dev); }
   }
+  /* ================= TARJETA POR CAPAS =================
+     Un solo diseño (doc.tarjeta) para todas las prendas de todos los catálogos.
+     Cada capa se ubica en % de la tarjeta y el texto en "cqw" (1 = 1% del ancho de la tarjeta),
+     así la tarjeta se ve idéntica en cualquier tamaño. */
+  var TPL_DEF = { v: 2, ar: 1.85, capas: [
+    { id: 'fondo', t: 'fondo', n: 'Fondo de la tarjeta', x: 0, y: 0, w: 100, h: 100, bg: '#ffffff', rad: 7, bw: 1, bc: '#ececec', sh: 'suave' },
+    { id: 'foto', t: 'foto', n: 'Foto', x: 2, y: 1.2, w: 96, h: 72, rad: 5.5, fy: 20 },
+    { id: 'nombre', t: 'nombre', n: 'Nombre', x: 7, y: 75.5, w: 86, h: 10, fs: 7, fw: 400, col: '#111111', lines: 2, ff: '@fb' },
+    { id: 'talla', t: 'talla', n: 'Talla', x: 7, y: 89.5, w: 40, h: 6.5, fs: 4.4, fw: 500, col: '#111111', ls: .12, up: 1, op: .75, va: 'c', ff: '@fb' },
+    { id: 'precio', t: 'precio', n: 'Precio', x: 40, y: 87.5, w: 53, h: 9.5, fs: 10, fw: 800, col: '#111111', al: 'r', va: 'c', lab: 1, labt: 'Precio', ff: '@fb' },
+    { id: 'pedir', t: 'pedir', n: 'Botón pedir', x: 7, y: 92, w: 86, h: 5.5, fs: 3.8, fw: 700, col: '#ffffff', bg: '#111111', rad: 2, al: 'c', va: 'c', tx: 'Pedir por WhatsApp', up: 1, ls: .08, hid: 1, ff: '@fb' }
+  ] };
+  /* diseño inicial anterior (foto más baja): si nadie lo modificó, se usa el nuevo */
+  var TPL_V1 = '[{"id":"fondo","t":"fondo","n":"Fondo de la tarjeta","x":0,"y":0,"w":100,"h":100,"bg":"#ffffff","rad":7,"bw":1,"bc":"#ececec","sh":"suave"},{"id":"foto","t":"foto","n":"Foto","x":2,"y":1.4,"w":96,"h":63,"rad":5.5}';
+  PG.TPL_DEF = TPL_DEF;
+  var SOMBRAS = { suave: '0 3cqw 7cqw rgba(0,0,0,.10)', media: '0 3cqw 9cqw rgba(0,0,0,.18)', fuerte: '0 4cqw 12cqw rgba(0,0,0,.30)' };
+  function tplOk(t) { if (!t || !Array.isArray(t.capas) || !t.capas.length) return TPL_DEF; if (!t.v && t.ar === 1.48 && JSON.stringify(t.capas).indexOf(TPL_V1) === 0) return TPL_DEF; return t; }
+  function tplDe(ctx) { return tplOk(ctx && ctx.doc && ctx.doc.tarjeta); }
+  PG.tplDe = function (doc) { return tplOk(doc && doc.tarjeta); };
+  function capaCss(L, z) {
+    var c = ['left:' + (L.x || 0) + '%', 'top:' + (L.y || 0) + '%', 'width:' + (L.w || 10) + '%', 'height:' + (L.h || 10) + '%', 'z-index:' + z];
+    if (L.hid) c.push('display:none'); if (L.op != null && L.op !== 1) c.push('opacity:' + L.op);
+    if (L.bg) c.push('background:' + fillCss(L.bg)); if (L.bw) c.push('border:' + (L.bw) + 'px solid ' + tok(L.bc || '#000000'));
+    if (L.rad) c.push('border-radius:' + L.rad + 'cqw'); if (L.sh && SOMBRAS[L.sh]) c.push('box-shadow:' + SOMBRAS[L.sh]);
+    if (L.fs) c.push('font-size:' + L.fs + 'cqw'); if (L.fw) c.push('font-weight:' + L.fw); if (L.ff) c.push('font-family:' + fontCss(L.ff));
+    if (L.col) c.push('color:' + tok(L.col)); if (L.ls) c.push('letter-spacing:' + L.ls + 'em'); if (L.up) c.push('text-transform:uppercase'); if (L.it) c.push('font-style:italic');
+    if (L.pad) c.push('padding:' + L.pad + 'cqw');
+    if (L.rot) c.push('transform:rotate(' + L.rot + 'deg)');
+    var al = L.al === 'c' ? 'center' : L.al === 'r' ? 'flex-end' : 'flex-start', va = L.va === 'c' ? 'center' : L.va === 'b' ? 'flex-end' : 'flex-start';
+    c.push('justify-content:' + al, 'align-items:' + va, 'text-align:' + (L.al === 'c' ? 'center' : L.al === 'r' ? 'right' : 'left'));
+    return c.join(';');
+  }
+  PG.capaCss = capaCss;
+  function tarjetaHTML(p, tpl, o) {
+    o = o || {}; var ts = tallasDe(p), capas = tpl.capas, talla = capas.filter(function (c) { return c.t === 'talla'; })[0];
+    if (!talla || talla.hid) ts = [];
+    var uno = ts.length === 1 ? ts[0] : '';
+    var h = capas.map(function (L, i) {
+      var st = capaCss(L, i + 1), a = ' data-capa="' + esc(L.id) + '"';
+      switch (L.t) {
+        case 'foto': return '<div class="ly ly-foto"' + a + ' style="' + st + '">' + (p.foto ? '<img src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy" style="object-fit:' + (L.fit || 'cover') + ';object-position:50% ' + (L.fy == null ? 20 : L.fy) + '%">' : '<span class="plata">' + esc((p.nombre || '?').charAt(0)) + '</span>') + '</div>';
+        case 'nombre': return '<h3 class="ly ly-nombre"' + a + ' style="' + st + '"><span class="lc" style="-webkit-line-clamp:' + (L.lines || 2) + '">' + esc(p.nombre) + '</span></h3>';
+        case 'precio': return '<div class="ly ly-precio" data-fit="1"' + a + ' style="' + st + '"><span class="fitw">' + (L.lab ? '<i class="pl">' + esc(L.labt || 'Precio') + '</i>' : '') + precioL(p.precio) + '</span></div>';
+        case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span></div><span class="tl-msg">Elige tu talla 👆</span></div>' : '';
+        case 'pedir': return '<a class="ly ly-pedir btn-pedir" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Pedir por WhatsApp') + '</span></a>';
+        case 'texto': return '<div class="ly ly-texto"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Texto') + '</span></div>';
+        default: return '<div class="ly ly-' + esc(L.t) + '"' + a + ' style="' + st + '"></div>';
+      }
+    }).join('');
+    return '<article class="prod capas" data-pid="' + esc(pid(p)) + '"' + (uno ? ' data-talla="' + esc(uno) + '"' : '') + ' style="aspect-ratio:100/' + Math.round((tpl.ar || 1.48) * 100) + '">' + h + '</article>';
+  }
+  PG.tarjetaHTML = tarjetaHTML;
+  /* el precio se achica solo si no cabe en su capa */
+  function ajustarTextos(root) {
+    root.querySelectorAll('.ly[data-fit]').forEach(function (el) {
+      var w = el.querySelector('.fitw'); if (!w) return; w.style.fontSize = '';
+      var max = el.clientWidth, k = 1; if (!max) return;
+      while (w.scrollWidth > max && k > .4) { k -= .05; w.style.fontSize = k + 'em'; }
+    });
+  }
+  PG.ajustarTextos = ajustarTextos;
   function fillCatalog(root, ctx) {
     root.querySelectorAll('.b-catalogo').forEach(function (b) { fillOne(b, ctx, ctx && ctx.doc.secs.filter(function (x) { return x.id === b.dataset.sid; })[0]); });
   }
@@ -377,13 +444,18 @@
     if (first && !ctx.edit && s.an && s.an.t) armAnim(ctx, n, n.querySelector(s.t === 'libre' ? '.swrap' : '.sin') || n, s.an, null);
   }
   PG.paintSec = function (ctx, s) { var n = ctx.sec[s.id]; if (n) { paintSec(ctx, s, n, false); fit(ctx); } };
+  /* En celular y tablet la página se dibuja al ancho de diseño (390 / 820) y se escala al ancho real:
+     así se ve IGUAL en cualquier teléfono (iPhone 11, 17, Android…) y igual que en la vista previa del editor. */
   function fit(ctx) {
-    var cw = ctx.mount.clientWidth || W.innerWidth;
+    var cw = ctx.mount.clientWidth || W.innerWidth, esc = ctx.dev !== 'd', Wp = esc ? DEV[ctx.dev].w : cw, z = esc ? cw / Wp : 1;
+    if (Math.abs(z - 1) < .002) z = 1;
+    ctx.mount.style.setProperty('--pw', Wp + 'px');
     ctx.doc.secs.forEach(function (s) {
+      var n0 = ctx.sec[s.id]; if (n0 && s.t !== 'libre') n0.style.zoom = z === 1 ? '' : z;
       if (s.t !== 'libre') return; var n = ctx.sec[s.id]; if (!n) return;
-      var ad = adapted(s, ctx.dev), Wd = ad ? DEV[ctx.dev].w : 1280, k = Math.min(1, cw / Wd), h = ad ? secRes(s, ctx.dev).h : s.h; h = h || 400;
+      var ad = adapted(s, ctx.dev), Wd = ad ? DEV[ctx.dev].w : 1280, k = esc && ad ? cw / Wd : Math.min(1, cw / Wd), h = ad ? secRes(s, ctx.dev).h : s.h; h = h || 400;
       var stg = n.querySelector('.stage'), sw = n.querySelector('.swrap');
-      stg.style.width = Wd + 'px'; stg.style.height = h + 'px'; stg.style.marginLeft = -Wd / 2 + 'px'; stg.style.transform = k < 1 ? 'scale(' + k + ')' : '';
+      stg.style.width = Wd + 'px'; stg.style.height = h + 'px'; stg.style.marginLeft = -Wd / 2 + 'px'; stg.style.transform = k !== 1 ? 'scale(' + k + ')' : '';
       sw.style.height = Math.round(h * k) + 'px'; ctx.k[s.id] = k; ctx.Wd[s.id] = Wd;
     });
   }
@@ -434,19 +506,19 @@
     var p = prodDe(art); if (!p) return; art.dataset.talla = t; art.classList.remove('need', 'open');
     art.querySelectorAll('.tl').forEach(function (x) { x.classList.toggle('on', x.dataset.t === t); });
     var v = art.querySelector('.tl-v'); if (v) v.textContent = 'Talla: ' + t;
-    var a = art.querySelector('.det .btn'); if (a) a.href = waUrl(pedido(p, t));
+    var a = art.querySelector('.btn-pedir'); if (a) a.href = waUrl(pedido(p, t));
   }
   PG.elegirTalla = elegirTalla;
   function pedidoClick(e) {
     var tl = e.target.closest('.prod .tl'); if (tl) {
       e.preventDefault(); var ap = tl.closest('.prod'); elegirTalla(ap, tl.dataset.t);
-      if (ap.dataset.ir) { delete ap.dataset.ir; var wa = ap.querySelector('.det .btn'); if (wa) W.open(wa.href, '_blank', 'noopener'); }
+      if (ap.dataset.ir) { delete ap.dataset.ir; var wa = ap.querySelector('.btn-pedir'); if (wa) W.open(wa.href, '_blank', 'noopener'); }
       return true;
     }
     var tb = e.target.closest('.prod .tl-btn'); if (tb) { e.preventDefault(); var ar = tb.closest('.prod'); cerrarTallas(ar); ar.classList.toggle('open'); return true; }
     if (!e.target.closest('.tl-pop')) cerrarTallas();
-    var bt = e.target.closest('.prod .det .btn');
-    if (!bt) { var ac = e.target.closest('.cat-g[data-wab="0"] .prod'); if (!ac || e.target.closest('.tallas')) return false; bt = ac.querySelector('.det .btn'); if (!bt) return false;
+    var bt = e.target.closest('.prod .btn-pedir');
+    if (!bt) { var ac = e.target.closest('.cat-g[data-wab="0"] .prod'); if (!ac || e.target.closest('.tallas')) return false; bt = ac.querySelector('.btn-pedir'); if (!bt) return false;
       if (!(ac.querySelector('.tl') && !ac.dataset.talla)) { e.preventDefault(); W.open(bt.href, '_blank', 'noopener'); return true; } }
     var art = bt.closest('.prod'), g = art.closest('.cat-g');
     if (art.querySelector('.tl') && !art.dataset.talla) {

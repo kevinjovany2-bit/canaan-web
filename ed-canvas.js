@@ -159,6 +159,7 @@
     if (h && h.indexOf('rx-') === 0) { e.preventDefault(); return startRectSide(e, h.slice(3)); }
     if (h) { e.preventDefault(); return startHandle(e, h); }
     if (t.closest('[data-adapt]')) return;
+    var cap = t.closest && t.closest('.prod.capas'); if (cap && ED.abrirTarjeta) { e.preventDefault(); ED.abrirTarjeta(); return; }
     var pk = t.closest('[data-k]');
     if (pk && ctx.sec[pk.closest('section.sec').dataset.sid] && !pk.closest('section.sec.libre')) {
       var ps = pk.closest('section.sec').dataset.sid, psec = ED.sec(ps); if (psec && psec.lock) { ED.selectSec(ps); return; }

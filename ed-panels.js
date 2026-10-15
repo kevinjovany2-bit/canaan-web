@@ -333,8 +333,9 @@
       rng('Espacio entre prendas px', G, 'gap', { def: 24, min: 0, max: 80 }),
       seg('Alinear', G, 'al', [['left', '⟸', 'Izquierda'], ['center', '≡', 'Centro'], ['right', '⟹', 'Derecha']], { def: 'center' })]));
       root.appendChild(group('Diseño de la prenda', [
-      btn('✦ Aplicar diseño Moderno (tarjeta blanca, precio grande)', function () { aplicarModerno(sid); }, 'sm pri wide'),
-      seg('Estilo', G, 'est', [['clasico', 'Clásico'], ['moderno', 'Moderno']], { def: 'clasico' }),
+      btn('🧩 Diseñar la tarjeta por capas (todas las prendas y catálogos)', function () { ED.abrirTarjeta(); }, 'sm pri wide'),
+      btn('✦ Aplicar diseño Moderno (tarjeta blanca, precio grande)', function () { aplicarModerno(sid); }, 'sm wide'),
+      seg('Estilo', G, 'est', [['clasico', 'Clásico'], ['moderno', 'Moderno'], ['capas', 'Por capas']], { def: 'clasico' }),
       seg('Botón de WhatsApp', G, 'wab', [['1', 'Mostrar'], ['0', 'Ocultar (tocar la prenda para pedir)']], { def: PG.catCfg(ED.sec(sid), ED.dev).est === 'moderno' ? '0' : '1' })]));
     root.appendChild(group('Cómo se elige la talla', [
       seg('Estilo', G, 'tm', [['pedir', 'Al pedir'], ['chico', 'Junto al precio'], ['boton', 'Botón grande']], { def: 'chico' }),
