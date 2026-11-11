@@ -264,9 +264,10 @@
   /* todas las fotos de la prenda: la principal + las extra (se deslizan en la tarjeta) */
   function fotosDe(p) { return [p.foto].concat(Array.isArray(p.fotos) ? p.fotos : []).filter(function (f, i, a) { return f && a.indexOf(f) === i; }); }
   PG.fotosDe = fotosDe;
+  function codL(p) { var c = String(p.codigo || '').trim(); return c ? 'Código: ' + c + '\n' : ''; }
   function precioL(v) { return 'L ' + Number(v || 0).toLocaleString('es-HN'); }
   function pedido(p, talla) {
-    return '🛍️ *PEDIDO*\n\n*Detalles del producto:*\n\n• *' + p.nombre + '*\n' + (talla ? 'Talla: ' + talla + ' | ' : '') + 'Cantidad: 1\nPrecio: ' + precioL(p.precio) + '\n\n¿Está disponible?\n\n' + prodLink(p, talla);
+    return '🛍️ *PEDIDO*\n\n*Detalles del producto:*\n\n• *' + p.nombre + '*\n' + codL(p) + (talla ? 'Talla: ' + talla + ' | ' : '') + 'Cantidad: 1\nPrecio: ' + precioL(p.precio) + '\n\n¿Está disponible?\n\n' + prodLink(p, talla);
   }
   PG.TALLAS = TALLAS; PG.tallasDe = tallasDe; PG.pid = pid; PG.slug = slug;
   /* cuadrícula del catálogo: columnas × filas por dispositivo, forma de foto y espacio */
@@ -563,7 +564,12 @@
      Se guarda en el navegador de la clienta. "Enviar pedido" arma un solo
      mensaje de WhatsApp con todas las prendas, tallas, cantidades y el total. */
   var CART = PG.carrito = (function () {
-    var KEY = 'canaan_carrito', items = [], ui = null;
+    var KEY = 'canaan_carrito', items = [], ui = null, pago = '';
+    try { pago = localStorage.getItem('canaan_pago') || ''; } catch (e) {}
+    /* formas de pago y cuentas: se escriben en productos.html (la web NO cobra; la tienda confirma el pago por WhatsApp) */
+    function pagos() { var S = W.SITIO || {}; return Array.isArray(S.pagos) ? S.pagos.filter(Boolean) : ['Transferencia bancaria', 'Efectivo en tienda', 'Tarjeta en tienda']; }
+    function cuentas() { return ((W.SITIO || {}).cuentas || []).filter(function (c) { return c && (c.banco || c.numero); }); }
+    function esTransf(t) { return /transfer|dep[oó]sito|banco|tigo|billetera/i.test(t || ''); }
     try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { items = []; }
     function guardar() { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {} pintar(); }
     function prod(id) { return ((W.SITIO || {}).productos || []).filter(function (p) { return pid(p) === id; })[0]; }
@@ -578,10 +584,10 @@
     function mensaje() {
       var L = vivos().map(function (it) {
         var p = prod(it.id), u = Number(p.precio) || 0;
-        return '• *' + p.nombre + '*\n' + (it.t ? 'Talla: ' + it.t + ' | ' : '') + 'Cantidad: ' + it.q + '\n' +
+        return '• *' + p.nombre + '*\n' + codL(p) + (it.t ? 'Talla: ' + it.t + ' | ' : '') + 'Cantidad: ' + it.q + '\n' +
           'Precio: ' + (it.q > 1 ? precioL(u) + ' c/u (' + precioL(u * it.q) + ')' : precioL(u));
       });
-      return '🛍️ *PEDIDO*\n\n*Detalles de los productos:*\n\n' + L.join('\n\n') + '\n\n*Total: ' + precioL(total()) + '*';
+      return '🛍️ *PEDIDO*\n\n*Detalles de los productos:*\n\n' + L.join('\n\n') + '\n\n*Total: ' + precioL(total()) + '*' + (pago ? '\n*Forma de pago:* ' + pago : '');
     }
     function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
     function init() {
@@ -589,10 +595,18 @@
       ui.btn = el('button', 'cc-btn', BOLSA + '<b class="cc-n">0</b>'); ui.btn.type = 'button'; ui.btn.title = 'Ver carrito'; ui.btn.onclick = abrir;
       ui.toast = document.querySelector('.cc-toast') || el('div', 'cc-toast');
       ui.fondo = el('div', 'cc-fondo'); ui.fondo.onclick = cerrar;
-      ui.panel = el('aside', 'cc-panel', '<div class="cc-h"><b>Tu carrito</b><button type="button" class="cc-x" aria-label="Cerrar">✕</button></div><div class="cc-list"></div><div class="cc-pie"><div class="cc-tot"><span>Total</span><b></b></div><a class="cc-enviar" target="_blank" rel="noopener">Enviar pedido por WhatsApp</a><button type="button" class="cc-vaciar">Vaciar carrito</button></div>');
+      ui.panel = el('aside', 'cc-panel', '<div class="cc-h"><b>Tu carrito</b><button type="button" class="cc-x" aria-label="Cerrar">✕</button></div><div class="cc-list"></div><div class="cc-pie"><div class="cc-pago"></div><div class="cc-tot"><span>Total</span><b></b></div><a class="cc-enviar" target="_blank" rel="noopener">Enviar pedido por WhatsApp</a><button type="button" class="cc-vaciar">Vaciar carrito</button></div>');
       ui.panel.querySelector('.cc-x').onclick = cerrar;
       ui.panel.querySelector('.cc-vaciar').onclick = function () { if (confirm('¿Vaciar el carrito?')) { items = []; guardar(); } };
-      ui.panel.querySelector('.cc-enviar').onclick = function (e) { if (!cuenta()) { e.preventDefault(); return; } this.href = waUrl(mensaje()); };
+      ui.panel.querySelector('.cc-enviar').onclick = function (e) {
+        if (!cuenta()) { e.preventDefault(); return; }
+        var ps = pagos(); if (ps.length && ps.indexOf(pago) < 0) { e.preventDefault(); pago = ''; pintarPago(true); return; }
+        this.href = waUrl(mensaje());
+      };
+      ui.panel.querySelector('.cc-pago').onclick = function (e) {
+        var b = e.target.closest('[data-pago]'); if (b) { pago = b.dataset.pago; try { localStorage.setItem('canaan_pago', pago); } catch (x) {} pintarPago(); return; }
+        var c = e.target.closest('[data-copiar]'); if (c) { copiar(c.dataset.copiar); }
+      };
       ui.panel.querySelector('.cc-list').onclick = function (e) {
         var b = e.target.closest('[data-op]'); if (!b) return; var it = items[+b.dataset.i]; if (!it) return;
         if (b.dataset.op === '+') it.q++; else if (b.dataset.op === '-') { it.q--; if (it.q < 1) items.splice(+b.dataset.i, 1); } else items.splice(+b.dataset.i, 1);
@@ -602,12 +616,28 @@
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrar(); });
       pintar();
     }
+    function copiar(t) {
+      var ok = function () { aviso('✓ Número copiado'); };
+      if (navigator.clipboard && W.isSecureContext) navigator.clipboard.writeText(t).then(ok, function () { viejo(); }); else viejo();
+      function viejo() { var a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); ok(); } catch (x) {} a.remove(); }
+    }
+    function pintarPago(falta) {
+      var box = ui && ui.panel.querySelector('.cc-pago'); if (!box) return; var ps = pagos();
+      if (!ps.length || !cuenta()) { box.innerHTML = ''; return; }
+      if (ps.indexOf(pago) < 0) pago = '';
+      var cs = cuentas(), h = '<b class="cc-pt">Forma de pago</b><div class="cc-pops">' + ps.map(function (x) { return '<button type="button" class="cc-po' + (x === pago ? ' on' : '') + '" data-pago="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>';
+      if (falta) h += '<span class="cc-aviso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>Elige la forma de pago para enviar tu pedido</span>';
+      if (pago && esTransf(pago)) h += '<div class="cc-cuentas">' + (cs.length ? cs.map(function (c) {
+        return '<div class="cc-cu"><div><b>' + esc(c.banco || '') + '</b>' + (c.tipo ? ' <small>' + esc(c.tipo) + '</small>' : '') + '<span>' + esc(c.numero || '') + '</span>' + (c.titular ? '<small>A nombre de: ' + esc(c.titular) + '</small>' : '') + '</div>' + (c.numero ? '<button type="button" data-copiar="' + esc(c.numero) + '">Copiar</button>' : '') + '</div>';
+      }).join('') : '<p>Te enviaremos los datos de la cuenta por WhatsApp.</p>') + '<p class="cc-nota">Envía tu pedido y luego la foto del comprobante por WhatsApp. Confirmamos tu pago y te avisamos cuándo pasar a recogerlo a la tienda.</p></div>';
+      box.innerHTML = h;
+    }
     function abrir() { pintar(); document.documentElement.classList.add('cc-abierto'); }
     function cerrar() { document.documentElement.classList.remove('cc-abierto'); }
     function pintar() {
       if (!ui) return; var n = cuenta(); ui.btn.querySelector('.cc-n').textContent = n; ui.btn.classList.toggle('vacio', !n);
       ui.panel.querySelector('.cc-tot b').textContent = precioL(total());
-      ui.panel.querySelector('.cc-enviar').classList.toggle('off', !n);
+      ui.panel.querySelector('.cc-enviar').classList.toggle('off', !n); pintarPago();
       ui.panel.querySelector('.cc-list').innerHTML = n ? items.map(function (it, i) {
         var p = prod(it.id); if (!p) return ''; var f = p.mini || p.foto;
         return '<div class="cc-it">' + (f ? '<img src="' + esc(PG.asset('images/' + f)) + '" alt="">' : '<span class="cc-ph"></span>') +

@@ -286,3 +286,18 @@
 .pg .fg-a{position:absolute;top:50%;z-index:3;width:12cqw;height:12cqw;max-width:34px;max-height:34px;min-width:24px;min-height:24px;transform:translateY(-50%);border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#111;font:400 22px/1 system-ui,sans-serif;display:none;align-items:center;justify-content:center;padding:0 0 3px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);opacity:0;transition:opacity .2s}
 .pg .fg-prev{left:3cqw}.pg .fg-next{right:3cqw}
 @media (hover:hover){.pg .ly-foto.fotos .fg-a{display:flex}.pg .prod.capas:hover .fg-a{opacity:1}}
+/* forma de pago en el carrito */
+.cc-pago:empty{display:none}
+.cc-pago{display:flex;flex-direction:column;gap:8px;padding-bottom:10px;border-bottom:1px solid #f0f0f0}
+.cc-pt{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#666;font-weight:600}
+.cc-pops{display:flex;flex-wrap:wrap;gap:6px}
+.cc-po{border:1px solid #d9d9de;background:#fff;color:#111;border-radius:999px;padding:8px 13px;font:600 13px system-ui,-apple-system,sans-serif;cursor:pointer}
+.cc-po.on{background:#111;color:#fff;border-color:#111}
+.cc-aviso{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:8px;background:#fff;border:1px solid #e6cf98;color:#7a5a12;font:600 12px/1.25 system-ui,-apple-system,sans-serif;animation:tl-av .35s ease-out}
+.cc-aviso svg{width:14px;height:14px;flex:none;color:#c9971c}
+.cc-cuentas{display:flex;flex-direction:column;gap:6px;max-height:34vh;overflow:auto}
+.cc-cu{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f7f7f8;border-radius:10px;padding:9px 11px}
+.cc-cu div{display:flex;flex-direction:column;min-width:0}.cc-cu b{font-size:14px}.cc-cu span{font:700 15px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.02em;overflow-wrap:anywhere}.cc-cu small{font-size:12px;color:#666}
+.cc-cu button{border:1px solid #d9d9de;background:#fff;border-radius:8px;padding:6px 10px;font:600 12px system-ui;cursor:pointer;flex:none}
+.cc-cuentas p{margin:0;font-size:13px;color:#555}.cc-cuentas .cc-nota{font-size:12px;color:#777}
+@keyframes tl-av{from{opacity:0;transform:translateY(-4px)}}
