@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e79d4a58-9567-4331-bcb9-c454361a6d29
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Productos y datos — Canaàn</title>
 <style>
@@ -73,7 +76,7 @@ textarea{min-height:70px}
   <b>Productos y datos · Canaàn</b>
   <button id="guardar" class="main">Guardar y publicar</button>
   <button id="salir">Salir</button>
-  <a href="admin.html" target="_blank">Editor visual ↗</a> <a href="index.html" target="_blank">Ver sitio ↗</a>
+  <a href='/admin' target='_blank'>Editor visual ↗</a> <a href='/' target='_blank'>Ver sitio ↗</a>
   <div id="estado">Los cambios se guardan en la nube y se ven al instante en la web.</div>
 </div>
 
@@ -140,7 +143,11 @@ function render(){
     '<label>Código<input data-p="' + k + 'codigo" value="' + esc(p.codigo || "") + '" placeholder="Ej. CB-001" maxlength="30"></label>' +
     '<label>Categoría<select data-p="' + k + 'cat">' + cats.map(function(c){ return '<option' + (c === p.cat ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join("") + '</select></label>' +
     '<label>Precio L<input type="number" data-p="' + k + 'precio" value="' + p.precio + '"></label>' +
-    '<button class="x" data-delrow="productos.' + i + '">Borrar</button>' + tallasUI(p, i) + fotosUI(p, i) + '</div>';
+    '<button class="x" data-delrow="productos.' + i + '">Borrar</button>' +
+    '<div class="p2box" style="flex-basis:100%;width:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:6px 0"><span style="flex-basis:100%;font-size:12px;opacity:.75">Si las prendas de la foto se venden por separado, pon el 2º precio (vacío = un solo precio):</span>' +
+    '<label>Nombre precio 1<input data-p="' + k + 'et1" value="' + esc(p.et1 || "") + '" placeholder="Ej. Top" maxlength="20"></label>' +
+    '<label>2º precio L<input type="number" data-p="' + k + 'precio2" value="' + (p.precio2 || "") + '" placeholder="Opcional"></label>' +
+    '<label>Nombre precio 2<input data-p="' + k + 'et2" value="' + esc(p.et2 || "") + '" placeholder="Ej. Pantalón" maxlength="20"></label></div>' + tallasUI(p, i) + fotosUI(p, i) + '</div>';
   }).join("") + '<button class="add" data-addrow="producto">+ Agregar prenda</button></fieldset>' +
   '<fieldset><legend>Formas de pago</legend><p class="hint">Salen en el carrito; la clienta elige una y se agrega al mensaje de WhatsApp. La web no cobra: tú confirmas el pago antes de entregar la prenda.</p>' + L("Formas de pago","pagos") +
     '<label style="margin-top:14px">Cuentas para transferencia <small>(salen cuando la clienta elige "Transferencia")</small></label>' +
@@ -255,3 +262,4 @@ $("guardar").onclick = async function(){
 </script>
 </body>
 </html>
+<script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="e79d4a58-9567-4331-bcb9-c454361a6d29" data-app-host="app.netlify.com" data-account-tier="free"></script>
