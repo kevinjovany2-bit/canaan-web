@@ -268,12 +268,27 @@
   function precioL(v) { return 'L ' + Number(v || 0).toLocaleString('es-HN'); }
   /* segundo precio (prendas que se venden por separado) */
   function dobleP(p) { return Number(p && p.precio2) > 0; }
+  function selDe(p, talla) { var s = String(talla || ''), e1 = (p.et1 || 'Top') + ' ', e2 = (p.et2 || 'Pantalón') + ' ', a = s.indexOf(e1) === 0, b = s.indexOf(e2) >= 0; if (!a && !b) { a = true; b = true; } return { a: a, b: b }; }
+  function nomSel(p, talla) { var s = selDe(p, talla), n1 = p.et1 || 'Top', n2 = p.et2 || 'Pantalón'; return s.a && s.b ? n1 + ' + ' + n2 : 'Solo ' + (s.a ? n1 : n2); }
+  function puSel(p, talla) { if (!dobleP(p)) return Number(p && p.precio) || 0; var s = selDe(p, talla); return (s.a ? Number(p.precio) || 0 : 0) + (s.b ? Number(p.precio2) || 0 : 0); }
+  function lineaPrecio(p, talla) {
+    if (!dobleP(p)) return 'Precio: ' + precioL(p.precio);
+    var s = selDe(p, talla), n1 = p.et1 || 'Top', n2 = p.et2 || 'Pantalón';
+    return 'Prenda: ' + nomSel(p, talla) + '\nPrecio: ' + (s.a && s.b ? n1 + ' ' + precioL(p.precio) + ' + ' + n2 + ' ' + precioL(p.precio2) + ' = ' + precioL(puSel(p, talla)) : precioL(puSel(p, talla)));
+  }
+  function tallas2De(p) { return dobleP(p) ? String(p.tallas2 || '').split(/[\s,\/]+/).map(function (x) { return x.trim(); }).filter(Boolean) : []; }
+  function tlGrupos(p, ts) {
+    var t2 = tallas2De(p); if (!t2.length) return '';
+    var b = function (g) { return function (t) { return '<button type="button" class="tl" data-g="' + g + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }; };
+    return '<span class="tl-l2">' + esc(p.et1 || 'Top') + '</span>' + ts.map(b(1)).join('') + '<span class="tl-l2">' + esc(p.et2 || 'Pantalón') + '</span>' + t2.map(b(2)).join('');
+  }
+  (function () { if (typeof document === 'undefined' || document.getElementById('t2css')) return; var s = document.createElement('style'); s.id = 't2css'; s.textContent = '.tl-l2{grid-column:1/-1;flex-basis:100%;width:100%;font-size:12px;font-weight:700;opacity:.75;margin:6px 0 2px;text-align:left}'; (document.head || document.documentElement).appendChild(s); })();
   function pu(p) { return (Number(p && p.precio) || 0) + (dobleP(p) ? Number(p.precio2) : 0); }
   function precioTxt(p) { return dobleP(p) ? (p.et1 || 'Top') + ' ' + precioL(p.precio) + ' / ' + (p.et2 || 'Pantalón') + ' ' + precioL(p.precio2) : precioL(p.precio); }
   function preciosH(p) { return '<span class="p2w">' + [[p.et1 || 'Top', p.precio], [p.et2 || 'Pantalón', p.precio2]].map(function (r) { return '<span class="p2r"><i class="pl">' + esc(String(r[0])) + '</i>' + precioL(r[1]) + '</span>'; }).join('') + '</span>'; }
   (function () { if (typeof document === 'undefined' || document.getElementById('p2css')) return; var s = document.createElement('style'); s.id = 'p2css'; s.textContent = '.p2w{display:inline-flex;flex-direction:column;align-items:flex-end;line-height:1.15}.p2r{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;font-size:.78em;white-space:nowrap}.p2r .pl{font-size:13px}'; (document.head || document.documentElement).appendChild(s); })();
   function pedido(p, talla) {
-    return '🛍️ *PEDIDO*\n\n*Detalles del producto:*\n\n• *' + p.nombre + '*\n' + codL(p) + (talla ? 'Talla: ' + talla + ' | ' : '') + 'Cantidad: 1\nPrecio: ' + precioTxt(p) + '\n\n¿Está disponible?\n\n' + prodLink(p, talla);
+    return '🛍️ *PEDIDO*\n\n*Detalles del producto:*\n\n• *' + p.nombre + '*\n' + codL(p) + (talla ? 'Talla: ' + talla + ' | ' : '') + 'Cantidad: 1\n' + lineaPrecio(p, talla) + '\n\n¿Está disponible?\n\n' + prodLink(p, talla);
   }
   PG.TALLAS = TALLAS; PG.tallasDe = tallasDe; PG.pid = pid; PG.slug = slug;
   /* cuadrícula del catálogo: columnas × filas por dispositivo, forma de foto y espacio */
@@ -336,8 +351,8 @@
     }
     b.querySelector('.cat-g').innerHTML = lista.length ? lista.map(function (p) {
       var f = p.foto ? '<img data-p="images/' + esc(p.foto) + '" src="' + esc(PG.asset('images/' + p.foto)) + '" alt="' + esc(p.nombre) + '" loading="lazy">' : '<span class="plata">' + esc(p.nombre.charAt(0)) + '</span>';
-      var ts = tallasDe(p), uno = ts.length === 1 ? ts[0] : '';
-      var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"' + K('tbt', 'Botón de tallas', 'btn') + '><span class="tl-v"' + K('tbl', 'Texto de tallas', 'text', !uno) + '>' + (uno ? 'Talla: ' + esc(uno) : (chico ? 'Talla' : 'Elegir talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l"' + K('tpl', 'Título del cuadro de tallas', 'text', 1) + '>Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '"' + K('tc', 'Opciones de talla', 'btn') + '>' + esc(t) + '</button>'; }).join('') + '</span></div></div>' : '';
+      var ts = tallasDe(p), uno = ts.length === 1 && !tallas2De(p).length ? ts[0] : '';
+      var tz = ts.length ? '<div class="tallas tb"' + K('pt', 'Tallas', 'text') + '><button type="button" class="tl-btn"' + K('tbt', 'Botón de tallas', 'btn') + '><span class="tl-v"' + K('tbl', 'Texto de tallas', 'text', !uno) + '>' + (uno ? 'Talla: ' + esc(uno) : (chico ? 'Talla' : 'Elegir talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l"' + K('tpl', 'Título del cuadro de tallas', 'text', 1) + '>Elige tu talla</span><span class="tl-g">' + (tlGrupos(p, ts) || ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '"' + K('tc', 'Opciones de talla', 'btn') + '>' + esc(t) + '</button>'; }).join('')) + '</span></div></div>' : '';
       return '<article class="prod" data-pid="' + esc(pid(p)) + '"' + K('pcard', 'Cuadro de la prenda', 'card') + (uno ? ' data-talla="' + esc(uno) + '"' : '') + '><div class="foto"' + K('pc', 'Foto de la prenda', 'card') + '>' + f + '</div><div class="det"><h3 class="tb"' + K('pn', 'Nombre de prenda', 'text') + '>' + esc(p.nombre) + '</h3><span class="precio tb"' + K('pp', 'Precio', 'text') + '>' + (dobleP(p) ? preciosH(p) : '<i class="pl">Precio</i>' + L(p.precio)) + '</span>' + tz + '<a class="btn btn-pedir" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + K('pb', 'Cuadro pedir', 'btn') + '><span' + K('pbl', 'Texto pedir', 'text') + '>Pedir por WhatsApp</span></a><span class="tl-msg">Primero elige tu talla 👆</span></div></article>';
     }).join('') : (ctx && ctx.edit ? '<p class="cat-vacio">Este catálogo no tiene prendas. Elígelas en el panel derecho → "Prendas de este catálogo".</p>' : '');
     if (ctx && s) { paintKs(ctx, b, s); applyCat(b, s, ctx.dev); }
@@ -406,7 +421,7 @@
           return '<div class="ly ly-foto"' + a + ' style="' + st + '">' + (fs.length ? im(fs[0], 0) : '<span class="plata">' + esc((p.nombre || '?').charAt(0)) + '</span>') + '</div>';
         case 'nombre': return '<h3 class="ly ly-nombre"' + a + ' style="' + st + '"><span class="lc" style="-webkit-line-clamp:' + (L.lines || 2) + '">' + esc(p.nombre) + '</span></h3>';
         case 'precio': return '<div class="ly ly-precio" data-fit="1"' + a + ' style="' + st + '"><span class="fitw">' + (dobleP(p) ? preciosH(p) : (L.lab ? '<i class="pl">' + esc(L.labt || 'Precio') + '</i>' : '') + precioL(p.precio)) + '</span></div>';
-        case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</span>' + AVISO_TALLA + '</div><span class="tl-msg">Selecciona talla para ordenar</span></div>' : '';
+        case 'talla': return ts.length ? '<div class="ly ly-talla tallas"' + a + ' style="' + st + '"><button type="button" class="tl-btn"><span class="tl-v">' + (uno ? 'Talla: ' + esc(uno) : esc(L.tx || 'Talla')) + '</span><i>▾</i></button><div class="tl-pop"><span class="tl-l">Elige tu talla</span><span class="tl-g">' + (tlGrupos(p, ts) || ts.map(function (t) { return '<button type="button" class="tl' + (t === uno ? ' on' : '') + '" data-t="' + esc(t) + '">' + esc(t) + '</button>'; }).join('')) + '</span>' + AVISO_TALLA + '</div><span class="tl-msg">Selecciona talla para ordenar</span></div>' : '';
         case 'pedir': return '<a class="ly ly-pedir btn-pedir" target="_blank" rel="noopener" href="' + esc(waUrl(pedido(p, uno))) + '"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Pedir por WhatsApp') + '</span></a>';
         case 'carrito': return '<button type="button" class="ly ly-carrito" title="Agregar al carrito"' + a + ' style="' + st + '">' + BOLSA + (L.tx ? '<span class="ctx">' + esc(L.tx) + '</span>' : '') + '</button>';
         case 'texto': return '<div class="ly ly-texto"' + a + ' style="' + st + '"><span>' + esc(L.tx || 'Texto') + '</span></div>';
@@ -580,7 +595,7 @@
     function guardar() { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {} pintar(); }
     function prod(id) { return ((W.SITIO || {}).productos || []).filter(function (p) { return pid(p) === id; })[0]; }
     function vivos() { return items.filter(function (it) { return prod(it.id); }); }
-    function total() { return vivos().reduce(function (a, it) { return a + pu(prod(it.id)) * it.q; }, 0); }
+    function total() { return vivos().reduce(function (a, it) { return a + puSel(prod(it.id), it.t) * it.q; }, 0); }
     function cuenta() { return vivos().reduce(function (a, it) { return a + it.q; }, 0); }
     function agregar(art) {
       var id = art.dataset.pid, t = art.dataset.talla || '', it = items.filter(function (x) { return x.id === id && x.t === t; })[0];
@@ -589,9 +604,9 @@
     }
     function mensaje() {
       var L = vivos().map(function (it) {
-        var p = prod(it.id), u = pu(p);
+        var p = prod(it.id), u = puSel(p, it.t);
         return '• *' + p.nombre + '*\n' + codL(p) + (it.t ? 'Talla: ' + it.t + ' | ' : '') + 'Cantidad: ' + it.q + '\n' +
-          (dobleP(p) ? 'Precio: ' + precioTxt(p) + '\nConjunto: ' : 'Precio: ') + (it.q > 1 ? precioL(u) + ' c/u (' + precioL(u * it.q) + ')' : precioL(u));
+          (dobleP(p) ? 'Prenda: ' + nomSel(p, it.t) + '\nPrecio: ' : 'Precio: ') + (it.q > 1 ? precioL(u) + ' c/u (' + precioL(u * it.q) + ')' : precioL(u));
       });
       return '🛍️ *PEDIDO*\n\n*Detalles de los productos:*\n\n' + L.join('\n\n') + '\n\n*Total: ' + precioL(total()) + '*' + (pago ? '\n*Forma de pago:* ' + pago : '');
     }
@@ -647,9 +662,9 @@
       ui.panel.querySelector('.cc-list').innerHTML = n ? items.map(function (it, i) {
         var p = prod(it.id); if (!p) return ''; var f = p.mini || p.foto;
         return '<div class="cc-it">' + (f ? '<img src="' + esc(PG.asset('images/' + f)) + '" alt="">' : '<span class="cc-ph"></span>') +
-          '<div class="cc-d"><b>' + esc(p.nombre) + '</b><span>' + (it.t ? 'Talla ' + esc(it.t) + ' · ' : '') + precioTxt(p) + '</span>' +
+          '<div class="cc-d"><b>' + esc(p.nombre) + '</b><span>' + (it.t ? 'Talla ' + esc(it.t) + ' · ' : '') + (dobleP(p) ? esc(nomSel(p, it.t)) + ' · ' + precioL(puSel(p, it.t)) : precioL(p.precio)) + '</span>' +
           '<div class="cc-q"><button type="button" data-op="-" data-i="' + i + '">−</button><em>' + it.q + '</em><button type="button" data-op="+" data-i="' + i + '">+</button></div></div>' +
-          '<div class="cc-r"><b>' + precioL(pu(p) * it.q) + '</b><button type="button" class="cc-del" data-op="x" data-i="' + i + '" aria-label="Quitar">🗑</button></div></div>';
+          '<div class="cc-r"><b>' + precioL(puSel(p, it.t) * it.q) + '</b><button type="button" class="cc-del" data-op="x" data-i="' + i + '" aria-label="Quitar">🗑</button></div></div>';
       }).join('') : '<p class="cc-vacio">Tu carrito está vacío.<br>Toca la bolsita 🛍 de una prenda para agregarla.</p>';
     }
     return { agregar: agregar, init: init, abrir: abrir, pintar: pintar };
@@ -668,8 +683,20 @@
     var a = art.querySelector('.btn-pedir'); if (a) a.href = waUrl(pedido(p, t));
   }
   PG.elegirTalla = elegirTalla;
+  /* talla por pieza (conjuntos con 2 precios) */
+  function elegirGrupo(art, b) {
+    var p = prodDe(art); if (!p) return false; var g = b.dataset.g;
+    art.dataset['t' + g] = b.dataset.t;
+    art.querySelectorAll('.tl[data-g="' + g + '"]').forEach(function (x) { x.classList.toggle('on', x === b); });
+    var t1 = art.dataset.t1, t2 = art.dataset.t2;
+    var txt = [t1 ? (p.et1 || 'Top') + ' ' + t1 : '', t2 ? (p.et2 || 'Pantalón') + ' ' + t2 : ''].filter(Boolean).join(' / ');
+    art.dataset.talla = txt; art.classList.remove('need');
+    var v = art.querySelector('.tl-v'); if (v) v.textContent = 'Talla: ' + (t1 || '–') + ' / ' + (t2 || '–');
+    var a = art.querySelector('.btn-pedir'); if (a) a.href = waUrl(pedido(p, txt));
+    return !!(t1 && t2);
+  }
   function limpiarTalla(art) {
-    if (!art.querySelector('.tl')) return; delete art.dataset.talla; art.querySelectorAll('.tl').forEach(function (x) { x.classList.remove('on'); });
+    if (!art.querySelector('.tl')) return; delete art.dataset.talla; delete art.dataset.t1; delete art.dataset.t2; art.querySelectorAll('.tl').forEach(function (x) { x.classList.remove('on'); });
     var v = art.querySelector('.tl-v'), p = prodDe(art), L = art.querySelector('.ly-talla'); if (v) v.textContent = 'Talla';
     var a = art.querySelector('.btn-pedir'); if (a && p) a.href = waUrl(pedido(p, ''));
   }
@@ -695,6 +722,11 @@
     if (art.classList.contains('capas')) encajar(art.querySelector('.ly-talla .tl-pop'), art);
   }
   function pedidoClick(e) {
+    var tg = e.target.closest('.prod .tl[data-g]'); if (tg) {
+      e.preventDefault(); var ag = tg.closest('.prod');
+      if (elegirGrupo(ag, tg)) { ag.classList.remove('open'); if (ag.dataset.ir === 'cart') { delete ag.dataset.ir; cerrarTallas(); CART.agregar(ag); } else if (ag.dataset.ir) { delete ag.dataset.ir; cerrarTallas(); var wg = ag.querySelector('.btn-pedir'); if (wg) W.open(wg.href, '_blank', 'noopener'); } }
+      return true;
+    }
     var tl = e.target.closest('.prod .tl'); if (tl) {
       e.preventDefault(); var ap = tl.closest('.prod'); elegirTalla(ap, tl.dataset.t);
       if (ap.dataset.ir === 'cart') { delete ap.dataset.ir; cerrarTallas(); CART.agregar(ap); }
